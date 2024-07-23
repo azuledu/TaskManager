@@ -2,6 +2,7 @@ package edu.riesco.domain;
 
 import edu.riesco.exception.ModelException;
 import edu.riesco.exception.TaskNotFound;
+import edu.riesco.persistence.MemoryTaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ class TaskManagerTest {
 
     @BeforeEach
     void setup() {
-        taskManager = new TaskManager();
+        taskManager = new TaskManager(new MemoryTaskRepository());
     }
 
     @Test

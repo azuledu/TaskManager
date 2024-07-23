@@ -63,10 +63,9 @@ public class Task {
         isPending = true;
     }
 
-    public Task update(String title, String description, LocalDate dueDate) {
+    public void update(String title, String description, LocalDate dueDate) {
         if (title != null) this.title = title;
         if (description != null) this.description = description;
         if (dueDate != null) this.dueDate = dueDate;
-        return this;
     }
 }
