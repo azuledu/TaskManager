@@ -20,6 +20,8 @@ class TaskManagerTest {
     private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
+    private static final String TITLE_3 = "Title 3";
+    private static final String DESCRIPTION_3 = "Description 3";
 
     private TaskManager taskManager;
 
@@ -132,12 +134,12 @@ class TaskManagerTest {
     @Test
     @DisplayName("Tasks have consecutive integers as IDs starting in 1")
     void tasksIds() {
-        taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
-        taskManager.addTask(ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
+        int id1 = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
+        int id2 = taskManager.addTask(ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
         List<Task> tasks = taskManager.tasks();
 
-        assertEquals(1, tasks.getFirst().getId());
-        assertEquals(2, tasks.getLast().getId());
+        assertEquals(1, id1);
+        assertEquals(2, id2);
     }
 
     // Update
@@ -179,5 +181,19 @@ class TaskManagerTest {
             taskManager.deleteTask(1);
         });
     }
+
+    @Test
+    @DisplayName("After delete a task, remaining tasks get new IDs")
+    void TasksGetNewIdsAfterDeleteTask() {
+        int id1 = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
+        int id2 = taskManager.addTask(ANOTHER_TITLE, ANOTHER_DESCRIPTION, TODAY);
+        int id3 = taskManager.addTask(TITLE_3, DESCRIPTION_3, TODAY);
+        taskManager.deleteTask(2);
+
+        assertFalse(taskManager.hasTask(3));
+        assertEquals(A_TITLE, taskManager.taskById(id1).getTitle());
+        assertEquals(TITLE_3, taskManager.taskById(id2).getTitle());
+    }
+
 
 }

@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TaskTest {
 
-    private static final int AN_ID = 1;
     private static final String A_TITLE = "aTitle";
     private static final String A_DESCRIPTION = "aDescription";
     private static final LocalDate TODAY = LocalDate.now();
@@ -24,7 +23,7 @@ class TaskTest {
 
     @BeforeEach
     void setup() {
-        task = Task.create(AN_ID, A_TITLE, A_DESCRIPTION, TOMORROW);
+        task = Task.create(A_TITLE, A_DESCRIPTION, TOMORROW);
     }
 
     @Test
@@ -39,7 +38,7 @@ class TaskTest {
     @DisplayName("New task can not have a blank title")
     void taskWithNoBlankTitle() {
         assertThrows(ModelException.class, () -> {
-            Task.create(AN_ID, "", A_DESCRIPTION, TOMORROW);
+            Task.create("", A_DESCRIPTION, TOMORROW);
         });
     }
 

@@ -15,16 +15,18 @@ public class MemoryTaskRepository implements TaskRepository {
     }
 
     @Override
-    public void addTask(Task task) {
+    public int addTask(Task task) {
         tasks.add(task);
+        return tasks.size();  // Last Task ID. IDs start in 1
     }
 
     @Override
     public Task taskById(int id) {
-        return tasks.stream()
-                .filter(task -> task.getId() == id)
-                .findFirst()
-                .orElseThrow(() -> new TaskNotFound("Task with id " + id + " not found."));
+        try {
+            return tasks.get(id - 1);  // IDs start in 1, List index starts in 0
+        } catch (IndexOutOfBoundsException e) {
+            throw new TaskNotFound("Task with id " + id + " not found.");
+        }
     }
 
     @Override

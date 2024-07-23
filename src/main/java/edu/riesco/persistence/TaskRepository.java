@@ -9,7 +9,7 @@ public interface TaskRepository {
 
     boolean hasTasks();
 
-    void addTask(Task task);
+    int addTask(Task task);
 
     Task taskById(int id);
 

@@ -8,22 +8,20 @@ import java.time.LocalDate;
 public class Task {
     public static final String TITLE_CAN_NOT_BE_BLANK = "Title can not be blank";
 
-    private final int id;
     private String title;
     private String description;
     private LocalDate dueDate;
     private boolean isPending = true;
 
-    private Task(int id, String title, String description, LocalDate dueDate) {
-        this.id = id;
+    private Task(String title, String description, LocalDate dueDate) {
         this.title = title;
         this.description = description == null ? "" : description;
         this.dueDate = dueDate;  //TODO: Improve with a Null Object Pattern.
     }
 
-    public static Task create(int id, String title, String description, LocalDate dueDate) {
+    public static Task create(String title, String description, LocalDate dueDate) {
         assertTitleIsNotBlank(title);
-        return new Task(id, title, description, dueDate);
+        return new Task(title, description, dueDate);
     }
 
     private static void assertTitleIsNotBlank(String title) {
@@ -33,10 +31,6 @@ public class Task {
     public String toJson() {
         Gson gson = new Gson();
         return gson.toJson(this);
-    }
-
-    public int getId() {
-        return id;
     }
 
     public String getTitle() {

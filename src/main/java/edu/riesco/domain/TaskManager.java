@@ -10,8 +10,6 @@ import java.util.List;
 public class TaskManager {
     private final TaskRepository taskRepository;
 
-    private int nextId = 1;
-
     public TaskManager(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
@@ -30,10 +28,8 @@ public class TaskManager {
     }
 
     public int addTask(String title, String description, LocalDate dueDate) {
-        int taskId = nextId++;
-        Task newTask = Task.create(taskId, title, description, dueDate);
-        taskRepository.addTask(newTask);
-        return taskId;
+        Task newTask = Task.create(title, description, dueDate);
+        return taskRepository.addTask(newTask);
     }
 
     public boolean isPending(int id) {
@@ -48,9 +44,12 @@ public class TaskManager {
         taskRepository.taskById(id).markAsPending();
     }
 
+    Task taskById(int id) {
+        return taskRepository.taskById(id);
+    }
+
     public List<Task> tasks() {
         return taskRepository.tasks();
-        //return new ArrayList<>(tasks);
     }
 
     public String tasksAsJson() {
