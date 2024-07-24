@@ -1,18 +1,23 @@
 package edu.riesco.api;
 
-import edu.riesco.domain.Task;
+import com.google.gson.Gson;
 import edu.riesco.domain.TaskManager;
+import edu.riesco.persistence.JsonFileTaskRepository;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
+import java.io.File;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
 
 class TaskManagerCli {
 
-    public static TaskManager taskManager;
+    public static String tasksFile = System.getProperty("user.home") + File.separator + ".tm";
+    public static TaskManager taskManager = new TaskManager(new JsonFileTaskRepository(tasksFile));
 
     public static void main(String[] args) {
 
@@ -51,8 +56,14 @@ class TaskManagerCli {
 
         @Override
         public void run() {
-            int id = taskManager.addTask(title, description, LocalDate.now());
-            System.out.println("Task " + id + " created");
+            try {
+                var parsedDueDate = dueDate != null ? LocalDate.parse(dueDate) : null;
+                int id = taskManager.addTask(title, description, parsedDueDate);
+                System.out.println("Task " + id + " created");
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date: " + dueDate);
+                //throw new InvalidDateException(e.getMessage());
+            }
         }
     }
 
@@ -70,7 +81,8 @@ class TaskManagerCli {
 
         @Override
         public void run() {
-            taskManager.updateTask(id, title, description, LocalDate.now());
+            var parsedDueDate = dueDate != null ? LocalDate.parse(dueDate) : null;
+            taskManager.updateTask(id, title, description, parsedDueDate);
             System.out.println("Task " + id + " updated");
         }
     }
@@ -119,8 +131,43 @@ class TaskManagerCli {
 
         @Override
         public void run() {
-            List<Task> tasks = taskManager.tasks();
-            System.out.println(tasks);
+            List<String> tasks = taskManager.tasksAsJson();
+            showTasks(tasks);
+        }
+
+        private void showTasks(List<String> tasks) {
+            Gson gson = new Gson();
+            final String BOLD = "\033[1m";
+            final String NORMAL = "\033[0m";
+            final String GREEN = "\u001B[32m";
+            final String YELLOW = "\u001B[33m";
+            final String PURPLE = "\u001B[35m";
+
+            System.out.println(BOLD + "  ID   Due Date    Status     Title and Description" + NORMAL);
+            System.out.println(" ---------------------------------------------------");
+            int taskId = 1;
+            for (String task : tasks) {
+                Map printableTask = gson.fromJson(task, Map.class);
+                String status = (boolean) printableTask.get("isPending") ? "PENDING " : GREEN + "COMPLETED" + NORMAL;
+                String printableDueDate;
+                if (printableTask.get("dueDate") == null) {
+                    printableDueDate = "";
+                } else if (LocalDate.parse(printableTask.get("dueDate").toString()).isAfter(LocalDate.now())) {
+                    printableDueDate = printableTask.get("dueDate").toString();
+                } else {
+                    printableDueDate = YELLOW + printableTask.get("dueDate").toString() + NORMAL;
+                }
+
+                System.out.printf(PURPLE + "%4s  " + NORMAL, taskId);
+                System.out.printf("%10s  ", printableDueDate);
+                System.out.printf("%9s   ", status);
+                System.out.print(BOLD + printableTask.get("title") + NORMAL);
+                if (!printableTask.get("description").toString().isBlank()) {
+                    System.out.print(" - " + printableTask.get("description"));
+                }
+                System.out.println();
+                taskId++;
+            }
         }
     }
 }

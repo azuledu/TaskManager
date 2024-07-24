@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,13 +39,9 @@ public class JsonFileTaskRepository implements TaskRepository {
     @Override
     public int addTask(Task task) {
         try {
-            if (Files.exists(filePath)) {
-                Files.write(filePath, (System.lineSeparator() + task.toJson()).getBytes(), StandardOpenOption.APPEND);
-                return lastTaskId();
-            } else {
-                Files.write(filePath, task.toJson().getBytes());
-                return 1;
-            }
+            Files.write(filePath, task.toJson().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+            Files.write(filePath, System.lineSeparator().getBytes(), StandardOpenOption.APPEND);
+            return lastTaskId();
         } catch (IOException e) {
             throw new TaskRepositoryException(e.getMessage());
         }
@@ -56,6 +53,24 @@ public class JsonFileTaskRepository implements TaskRepository {
             return (int) fileStream.count();
         } catch (IOException e) {
             throw new TaskRepositoryException(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<Task> tasks() {
+        try {
+            List<String> lines = Files.readAllLines(filePath);
+            return lines.stream().map(Task::fromJson).collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new TaskRepositoryException(e.getMessage());
+        }
+    }
+
+    public List<String> tasksAsJson() {
+        try {
+            return Files.readAllLines(filePath);
+        } catch (IOException e) {
+            return new ArrayList<>();
         }
     }
 
@@ -137,17 +152,6 @@ public class JsonFileTaskRepository implements TaskRepository {
 
             // Write the updated lines back to the file
             Files.write(filePath, lines);
-        } catch (IOException e) {
-            throw new TaskRepositoryException(e.getMessage());
-        }
-    }
-
-
-    @Override
-    public List<Task> tasks() {
-        try {
-            List<String> lines = Files.readAllLines(filePath);
-            return lines.stream().map(Task::fromJson).collect(Collectors.toList());
         } catch (IOException e) {
             throw new TaskRepositoryException(e.getMessage());
         }

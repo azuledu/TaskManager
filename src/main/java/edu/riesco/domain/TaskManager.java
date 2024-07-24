@@ -1,6 +1,5 @@
 package edu.riesco.domain;
 
-import com.google.gson.Gson;
 import edu.riesco.exception.TaskNotFoundException;
 
 import java.time.LocalDate;
@@ -51,8 +50,8 @@ public class TaskManager {
         return taskRepository.tasks();
     }
 
-    public String tasksAsJson() {
-        return new Gson().toJson(taskRepository.tasks());
+    public List<String> tasksAsJson() {
+        return taskRepository.tasksAsJson();
     }
 
     public String getTaskTitle(int id) {

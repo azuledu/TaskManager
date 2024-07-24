@@ -9,6 +9,7 @@ import picocli.CommandLine;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,6 +18,10 @@ class TaskManagerCliTest {
     private static final String TASK_ID = "1";
     private static final String TASK_TITLE = "taskTitle";
     private static final String TASK_DESCRIPTION = "taskDescription";
+    private static final String TODAY = LocalDate.now().toString();
+    private static final String TOMORROW = LocalDate.now().plusDays(1).toString();//.format(formatter);
+    private static final String ANOTHER_TITLE = "Another title";
+    private static final String ANOTHER_DESCRIPTION = "Another description";
 
     private final PrintStream standardOut = System.out;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
@@ -53,15 +58,32 @@ class TaskManagerCliTest {
     }
 
     @Test
-    @DisplayName("CLI can add task with title and description.")
+    @DisplayName("CLI can add task with title, description an due date.")
     void addTaskWithTitleAndDescription() {
-        final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION};
+        final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION, "-t", TODAY};
         cmd.execute(args);
 
         assertEquals("Task " + TASK_ID + " created", outputStreamCaptor.toString().trim());
         Assertions.assertTrue(TaskManagerCli.taskManager.hasTasks());
         Assertions.assertEquals(TASK_TITLE, TaskManagerCli.taskManager.tasks().getFirst().getTitle());
         Assertions.assertEquals(TASK_DESCRIPTION, TaskManagerCli.taskManager.tasks().getFirst().getDescription());
+        Assertions.assertEquals(TODAY, TaskManagerCli.taskManager.tasks().getFirst().getDueDate().toString());
+    }
+
+    @Test
+    @DisplayName("CLI can update a task.")
+    void updateTask() {
+        final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION};
+        cmd.execute(args);
+        final String[] args2 = {"update", TASK_ID, ANOTHER_TITLE, "-d", ANOTHER_DESCRIPTION, "-t", TOMORROW};
+        cmd.execute(args2);
+
+        String consoleOutput = "Task " + TASK_ID + " created" + "\n" + "Task " + TASK_ID + " updated";
+        assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
+        Assertions.assertTrue(TaskManagerCli.taskManager.hasTasks());
+        Assertions.assertEquals(ANOTHER_TITLE, TaskManagerCli.taskManager.tasks().getFirst().getTitle());
+        Assertions.assertEquals(ANOTHER_DESCRIPTION, TaskManagerCli.taskManager.tasks().getFirst().getDescription());
+        Assertions.assertEquals(TOMORROW, TaskManagerCli.taskManager.tasks().getFirst().getDueDate().toString());
     }
 
     @Test

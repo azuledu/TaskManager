@@ -30,7 +30,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>api.edu.riesco.TaskManagerCli</mainClass>
+                            <mainClass>edu.riesco.api.TaskManagerCli</mainClass>
                             <id>tm</id>
                         </program>
                     </programs>

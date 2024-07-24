@@ -1,8 +1,55 @@
 # Task Manager
 
+Simple task manager.
+
+Allows to add, update and delete tasks. Every task can have a _title, description, due date_ and _status_.
+
+Tasks are stored in a JSON file named `.tm` in user's `home` directory.
+
+The Task Manager executable file is located in `./target/tm`.    
+
+As this file is created using GraalVM SDK, it is not necessary a local Java SDK install to execute it.
+Just execute it or add it to the local `PATH` variable or, even better, move it to a directory wich is already in
+the `PATH` like `/usr/local/bin/`
+
+
+
+## Usage
+
+```
+Usage: tm [COMMAND]
+Task manager
+Commands:
+  add       Add Task
+  update    Update Task
+  complete  Mark task as 'Completed'
+  pending   Mark task as 'Pending'
+  delete    Delete Task
+  list      List Tasks
+  help      Display help information about the specified command.
+```
+
+
+
+## Develop
+
+### Create an executable file
+
+Create a native executable file with GraalVM is a time-consuming process.   
+For fast feedback during development is easier to create an executable file which depends on the local installed JDK.
+
+`mvn package appassembler:assemble`
+
+This new executable file will be located in `./target/appassembler/bin/tm`
+
+
 ### Create a native executable file
 
-Install GraalVM with [SDKMAN](https://sdkman.io/) or directly
+A native executable file located in `./target/tm` is distributed with the code and ready to use.
+
+Recreate this file needs some **requirements**:
+
+First, **Install GraalVM** with [SDKMAN](https://sdkman.io/) or directly
 from [GraalVM web](https://www.graalvm.org/latest/docs/getting-started):
 
 ```
@@ -29,8 +76,8 @@ Compile the project and **build a native executable file** at one step:
 `mvn -Pnative package`
 
 The native executable, named `tm`, is created in the `target/` directory of the project.
-Run the executable:  
-`./target/tm`
+To run the executable:`./target/tm`
+
 
 ### Bash autocompletion
 
@@ -41,3 +88,4 @@ sudo apt install bash-completion
 sudo cp tm-bash-completion.sh /etc/bash_completion.d/tm
 source /etc/bash_completion
 ```
+

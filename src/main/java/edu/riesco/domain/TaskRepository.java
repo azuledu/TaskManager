@@ -12,11 +12,14 @@ public interface TaskRepository {
 
     List<Task> tasks();
 
-    Task taskById(int id);
+    List<String> tasksAsJson();
 
+    Task taskById(int id);
+    
     void markAsComplete(int id);
 
     void markAsPending(int id);
+
 
     void updateTask(int id, String title, String description, LocalDate dueDate);
 

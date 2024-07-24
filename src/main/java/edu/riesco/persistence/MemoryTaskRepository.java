@@ -7,6 +7,7 @@ import edu.riesco.exception.TaskNotFoundException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MemoryTaskRepository implements TaskRepository {
     private final List<Task> tasks = new ArrayList<>();
@@ -34,6 +35,11 @@ public class MemoryTaskRepository implements TaskRepository {
     @Override
     public List<Task> tasks() {
         return new ArrayList<>(tasks);
+    }
+
+    @Override
+    public List<String> tasksAsJson() {
+        return tasks.stream().map(Task::toJson).collect(Collectors.toList());
     }
 
     public void markAsComplete(int id) {
