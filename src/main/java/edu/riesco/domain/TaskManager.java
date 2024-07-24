@@ -1,8 +1,7 @@
 package edu.riesco.domain;
 
 import com.google.gson.Gson;
-import edu.riesco.exception.TaskNotFound;
-import edu.riesco.persistence.TaskRepository;
+import edu.riesco.exception.TaskNotFoundException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,7 +21,7 @@ public class TaskManager {
         try {
             taskRepository.taskById(id); // Task exist
             return true;
-        } catch (TaskNotFound e) {
+        } catch (TaskNotFoundException e) {
             return false;
         }
     }
@@ -37,11 +36,11 @@ public class TaskManager {
     }
 
     public void markAsComplete(int id) {
-        taskRepository.taskById(id).markAsComplete();
+        taskRepository.markAsComplete(id);
     }
 
     public void markAsPending(int id) {
-        taskRepository.taskById(id).markAsPending();
+        taskRepository.markAsPending(id);
     }
 
     Task taskById(int id) {
@@ -70,7 +69,7 @@ public class TaskManager {
     }
 
     public void updateTask(int id, String title, String description, LocalDate dueDate) {
-        taskRepository.taskById(id).update(title, description, dueDate);
+        taskRepository.updateTask(id, title, description, dueDate);
     }
 
     public void deleteTask(int id) {

@@ -1,13 +1,17 @@
 package edu.riesco.domain;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import edu.riesco.exception.ModelException;
 
+import java.lang.reflect.Type;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Task {
     public static final String TITLE_CAN_NOT_BE_BLANK = "Title can not be blank";
-
+    private static final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
+            .create();
     private String title;
     private String description;
     private LocalDate dueDate;
@@ -28,8 +32,17 @@ public class Task {
         if (title == null || title.isBlank()) throw new ModelException(TITLE_CAN_NOT_BE_BLANK);
     }
 
+    public static Task fromJson(String json) {
+        try {
+            Task task = gson.fromJson(json, Task.class);
+            assertTitleIsNotBlank(task.title);
+            return task;
+        } catch (JsonParseException | NullPointerException e) {
+            throw new IllegalArgumentException("Invalid JSON string", e);
+        }
+    }
+
     public String toJson() {
-        Gson gson = new Gson();
         return gson.toJson(this);
     }
 
@@ -49,11 +62,11 @@ public class Task {
         return isPending;
     }
 
-    void markAsComplete() {
+    public void markAsComplete() {
         isPending = false;
     }
 
-    void markAsPending() {
+    public void markAsPending() {
         isPending = true;
     }
 
@@ -61,5 +74,23 @@ public class Task {
         if (title != null) this.title = title;
         if (description != null) this.description = description;
         if (dueDate != null) this.dueDate = dueDate;
+    }
+}
+
+
+class LocalDateTypeAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
+
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    @Override
+    public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
+                                 final JsonSerializationContext context) {
+        return new JsonPrimitive(date.format(formatter));
+    }
+
+    @Override
+    public LocalDate deserialize(final JsonElement json, final Type typeOfT,
+                                 final JsonDeserializationContext context) throws JsonParseException {
+        return LocalDate.parse(json.getAsString(), formatter);
     }
 }

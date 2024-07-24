@@ -1,12 +1,14 @@
 package edu.riesco.domain;
 
 import edu.riesco.exception.ModelException;
-import edu.riesco.exception.TaskNotFound;
-import edu.riesco.persistence.MemoryTaskRepository;
+import edu.riesco.exception.TaskNotFoundException;
+import edu.riesco.persistence.JsonFileTaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -14,21 +16,25 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TaskManagerTest {
 
+    //private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String A_TITLE = "aTitle";
     private static final String A_DESCRIPTION = "aDescription";
     private static final LocalDate TODAY = LocalDate.now();
-    private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);
+    private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);//.format(formatter);
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
     private static final String TITLE_3 = "Title 3";
     private static final String DESCRIPTION_3 = "Description 3";
-
+    
+    @TempDir
+    Path tempDir;
     private TaskManager taskManager;
-
 
     @BeforeEach
     void setup() {
-        taskManager = new TaskManager(new MemoryTaskRepository());
+        //taskManager = new TaskManager(new MemoryTaskRepository());
+        String filePath = tempDir.resolve("tmTestFile.json").toString();
+        taskManager = new TaskManager(new JsonFileTaskRepository(filePath));
     }
 
     @Test
@@ -84,7 +90,7 @@ class TaskManagerTest {
 
     @Test
     @DisplayName("Tasks can be set as 'completed'")
-    void markAsCompleteTask() {
+    void setTaskAsComplete() {
         int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TOMORROW);
         taskManager.markAsComplete(id);
 
@@ -95,7 +101,7 @@ class TaskManagerTest {
     @DisplayName("A task searched by ID can not be set as 'completed' if is not found")
     void NotFoundSetTaskAsCompleted() {
         assertFalse(taskManager.hasTask(1));
-        assertThrows(TaskNotFound.class, () -> {
+        assertThrows(TaskNotFoundException.class, () -> {
             taskManager.markAsComplete(1);
         });
     }
@@ -114,7 +120,7 @@ class TaskManagerTest {
     @DisplayName("A task searched by ID can not be set as 'pending' if is not found")
     void NotFoundSetTaskAsPending() {
         assertFalse(taskManager.hasTask(1));
-        assertThrows(TaskNotFound.class, () -> {
+        assertThrows(TaskNotFoundException.class, () -> {
             taskManager.markAsPending(1);
         });
     }
@@ -136,7 +142,6 @@ class TaskManagerTest {
     void tasksIds() {
         int id1 = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
         int id2 = taskManager.addTask(ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
-        List<Task> tasks = taskManager.tasks();
 
         assertEquals(1, id1);
         assertEquals(2, id2);
@@ -157,9 +162,10 @@ class TaskManagerTest {
     @Test
     @DisplayName("A task searched by ID can not be updated if is not found")
     void NotFoundUpdateTask() {
-        assertFalse(taskManager.hasTask(1));
-        assertThrows(TaskNotFound.class, () -> {
-            taskManager.updateTask(1, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
+        int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY); // Creates a Repository
+        assertFalse(taskManager.hasTask(2));
+        assertThrows(TaskNotFoundException.class, () -> {
+            taskManager.updateTask(2, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
         });
     }
 
@@ -176,9 +182,10 @@ class TaskManagerTest {
     @Test
     @DisplayName("A task searched by ID can not be deleted if is not found")
     void NotFoundDeleteTask() {
-        assertFalse(taskManager.hasTask(1));
-        assertThrows(TaskNotFound.class, () -> {
-            taskManager.deleteTask(1);
+        int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY); // Creates a Repository
+        assertFalse(taskManager.hasTask(2));
+        assertThrows(TaskNotFoundException.class, () -> {
+            taskManager.deleteTask(2);
         });
     }
 

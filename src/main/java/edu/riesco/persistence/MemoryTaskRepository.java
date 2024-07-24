@@ -1,8 +1,10 @@
 package edu.riesco.persistence;
 
 import edu.riesco.domain.Task;
-import edu.riesco.exception.TaskNotFound;
+import edu.riesco.domain.TaskRepository;
+import edu.riesco.exception.TaskNotFoundException;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,17 +27,30 @@ public class MemoryTaskRepository implements TaskRepository {
         try {
             return tasks.get(id - 1);  // IDs start in 1, List index starts in 0
         } catch (IndexOutOfBoundsException e) {
-            throw new TaskNotFound("Task with id " + id + " not found.");
+            throw new TaskNotFoundException("Task with id " + id + " not found.");
         }
-    }
-
-    @Override
-    public void deleteTask(int id) {
-        tasks.remove(taskById(id));
     }
 
     @Override
     public List<Task> tasks() {
         return new ArrayList<>(tasks);
+    }
+
+    public void markAsComplete(int id) {
+        taskById(id).markAsComplete();
+    }
+
+    public void markAsPending(int id) {
+        taskById(id).markAsPending();
+    }
+
+    @Override
+    public void updateTask(int id, String title, String description, LocalDate dueDate) {
+        taskById(id).update(title, description, dueDate);
+    }
+
+    @Override
+    public void deleteTask(int id) {
+        tasks.remove(taskById(id));
     }
 }
