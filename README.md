@@ -13,6 +13,9 @@ Just execute it or add it to the local `PATH` variable or, even better, move it 
 the `PATH` like `/usr/local/bin/`
 
 
+![Task Manager](./img/tm.png)
+
+
 
 ## Usage
 
