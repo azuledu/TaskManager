@@ -23,20 +23,6 @@ public class JsonFileTaskRepository implements TaskRepository {
     }
 
     @Override
-    public boolean hasTasks() {
-        if (!Files.exists(filePath)) {
-            return false;
-        } else {
-            try (Stream<String> fileStream = Files.lines(filePath)) {
-                int numTasks = (int) fileStream.count();
-                return numTasks != 0;
-            } catch (IOException e) {
-                throw new TaskRepositoryException(e.getMessage());
-            }
-        }
-    }
-
-    @Override
     public int addTask(Task task) {
         try {
             Files.write(filePath, task.toJson().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
@@ -120,7 +106,7 @@ public class JsonFileTaskRepository implements TaskRepository {
         updateTask(id, task);
     }
 
-    public void updateTask(int id, Task task) {
+    private void updateTask(int id, Task task) {
         try {
             // Read all lines from the file
             Path file = filePath;
@@ -138,7 +124,8 @@ public class JsonFileTaskRepository implements TaskRepository {
 
     @Override
     public void updateTask(int id, String title, String description, LocalDate dueDate) {
-        Task newTask = Task.create(title, description, dueDate);
+        Task newTask = taskById(id);
+        newTask.update(title, description, dueDate);
         try {
             // Read all lines from the file
             List<String> lines = Files.readAllLines(filePath);

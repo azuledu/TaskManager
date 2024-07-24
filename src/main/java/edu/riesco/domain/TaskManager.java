@@ -13,7 +13,7 @@ public class TaskManager {
     }
 
     public boolean hasTasks() {
-        return taskRepository.hasTasks();
+        return !taskRepository.tasks().isEmpty();
     }
 
     public boolean hasTask(int id) {

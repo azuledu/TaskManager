@@ -13,11 +13,6 @@ public class MemoryTaskRepository implements TaskRepository {
     private final List<Task> tasks = new ArrayList<>();
 
     @Override
-    public boolean hasTasks() {
-        return !tasks.isEmpty();
-    }
-
-    @Override
     public int addTask(Task task) {
         tasks.add(task);
         return tasks.size();  // Last Task ID. IDs start in 1
