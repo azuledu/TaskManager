@@ -63,7 +63,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>api.edu.riesco.TaskManagerCli</mainClass>
+                            <mainClass>edu.riesco.api.TaskManagerCli</mainClass>
                             <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>

@@ -1,7 +1,7 @@
 package edu.riesco.api;
 
 import edu.riesco.domain.TaskManager;
-import edu.riesco.persistence.JsonFileTaskRepository;
+import edu.riesco.persistence.MemoryTaskRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
@@ -33,10 +33,10 @@ class TaskManagerCliTest {
     @BeforeEach
     void setup() {
         System.setOut(new PrintStream(outputStreamCaptor));
-        //cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new MemoryTaskRepository())));
+        cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new MemoryTaskRepository())));
 
-        String filePath = tempDir.resolve("tmTestFile.json").toString();
-        cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new JsonFileTaskRepository(filePath))));
+        //String filePath = tempDir.resolve("tmTestFile.json").toString();
+        //cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new JsonFileTaskRepository(filePath))));
 
     }
 

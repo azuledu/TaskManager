@@ -2,7 +2,7 @@ package edu.riesco.domain;
 
 import edu.riesco.exception.ModelException;
 import edu.riesco.exception.TaskNotFoundException;
-import edu.riesco.persistence.JsonFileTaskRepository;
+import edu.riesco.persistence.MemoryTaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,16 +25,16 @@ class TaskManagerTest {
     private static final String ANOTHER_DESCRIPTION = "Another description";
     private static final String TITLE_3 = "Title 3";
     private static final String DESCRIPTION_3 = "Description 3";
-    
+
     @TempDir
     Path tempDir;
     private TaskManager taskManager;
 
     @BeforeEach
     void setup() {
-        //taskManager = new TaskManager(new MemoryTaskRepository());
-        String filePath = tempDir.resolve("tmTestFile.json").toString();
-        taskManager = new TaskManager(new JsonFileTaskRepository(filePath));
+        taskManager = new TaskManager(new MemoryTaskRepository());
+        //String filePath = tempDir.resolve("tmTestFile.json").toString();
+        //taskManager = new TaskManager(new JsonFileTaskRepository(filePath));
     }
 
     @Test

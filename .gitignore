@@ -1,5 +1,5 @@
 target/
-target/tm
+!target/tm
 
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
