@@ -2,24 +2,27 @@ package edu.riesco.persistence;
 
 import edu.riesco.domain.Task;
 import edu.riesco.domain.TaskRepository;
+import edu.riesco.exception.EmptyRepositoryException;
 import edu.riesco.exception.TaskNotFoundException;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MemoryTaskRepository implements TaskRepository {
     private final List<Task> tasks = new ArrayList<>();
 
     @Override
-    public int addTask(Task task) {
+    public int create(Task task) {
         tasks.add(task);
         return tasks.size();  // Last Task ID. IDs start in 1
     }
 
     @Override
-    public Task taskById(int id) {
+    public Task getById(int id) {
+        if (tasks.isEmpty()) {
+            throw new EmptyRepositoryException("Operation not allowed in an empty repository.");
+        }
         try {
             return tasks.get(id - 1);  // IDs start in 1, List index starts in 0
         } catch (IndexOutOfBoundsException e) {
@@ -28,30 +31,20 @@ public class MemoryTaskRepository implements TaskRepository {
     }
 
     @Override
-    public List<Task> tasks() {
-        return new ArrayList<>(tasks);
+    public List<Task> getAll() {
+        return Collections.unmodifiableList(tasks);
+    }
+
+    // "Update" means "put a new task in the same location" to preserve the old Task ID.
+    @Override
+    public void update(int id, Task newTask) {
+        getById(id);  // To check if the repository is empty or the ID does not exist.
+        tasks.set(id - 1, newTask);
     }
 
     @Override
-    public List<String> tasksAsJson() {
-        return tasks.stream().map(Task::toJson).collect(Collectors.toList());
-    }
-
-    public void markAsComplete(int id) {
-        taskById(id).markAsComplete();
-    }
-
-    public void markAsPending(int id) {
-        taskById(id).markAsPending();
-    }
-
-    @Override
-    public void updateTask(int id, String title, String description, LocalDate dueDate) {
-        taskById(id).update(title, description, dueDate);
-    }
-
-    @Override
-    public void deleteTask(int id) {
-        tasks.remove(taskById(id));
+    public void delete(int id) {
+        Task task = getById(id);  // To check if the repository is empty or the ID does not exist.
+        tasks.remove(task);
     }
 }

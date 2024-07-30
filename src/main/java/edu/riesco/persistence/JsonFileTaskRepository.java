@@ -2,6 +2,7 @@ package edu.riesco.persistence;
 
 import edu.riesco.domain.Task;
 import edu.riesco.domain.TaskRepository;
+import edu.riesco.exception.EmptyRepositoryException;
 import edu.riesco.exception.TaskNotFoundException;
 import edu.riesco.exception.TaskRepositoryException;
 
@@ -9,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +23,7 @@ public class JsonFileTaskRepository implements TaskRepository {
     }
 
     @Override
-    public int addTask(Task task) {
+    public int create(Task task) {
         try {
             Files.write(filePath, task.toJson().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
             Files.write(filePath, System.lineSeparator().getBytes(), StandardOpenOption.APPEND);
@@ -43,7 +43,8 @@ public class JsonFileTaskRepository implements TaskRepository {
     }
 
     @Override
-    public List<Task> tasks() {
+    public List<Task> getAll() {
+        if (!Files.exists(filePath)) return new ArrayList<>();
         try {
             List<String> lines = Files.readAllLines(filePath);
             return lines.stream().map(Task::fromJson).collect(Collectors.toList());
@@ -52,16 +53,11 @@ public class JsonFileTaskRepository implements TaskRepository {
         }
     }
 
-    public List<String> tasksAsJson() {
-        try {
-            return Files.readAllLines(filePath);
-        } catch (IOException e) {
-            return new ArrayList<>();
-        }
-    }
-
     @Override
-    public Task taskById(int id) {
+    public Task getById(int id) {
+        if (!Files.exists(filePath)) {
+            throw new EmptyRepositoryException("Operation not allowed in an empty repository.");
+        }
         try (Stream<String> lines = Files.lines(filePath)) {
             String taskAsJson = lines.skip(id - 1).findFirst()
                     .orElseThrow(() -> new TaskNotFoundException("Task with id " + id + " not found."));
@@ -72,7 +68,10 @@ public class JsonFileTaskRepository implements TaskRepository {
     }
 
     @Override
-    public void deleteTask(int id) {
+    public void delete(int id) {
+        if (!Files.exists(filePath)) {
+            throw new EmptyRepositoryException("Operation not allowed in an empty repository.");
+        }
         try {
             // Read all tasks from the file
             List<String> lines = Files.readAllLines(filePath);
@@ -94,38 +93,12 @@ public class JsonFileTaskRepository implements TaskRepository {
         }
     }
 
-    public void markAsComplete(int id) {
-        Task task = taskById(id);
-        task.markAsComplete();
-        updateTask(id, task);
-    }
-
-    public void markAsPending(int id) {
-        Task task = taskById(id);
-        task.markAsPending();
-        updateTask(id, task);
-    }
-
-    private void updateTask(int id, Task task) {
-        try {
-            // Read all lines from the file
-            Path file = filePath;
-            List<String> lines = Files.readAllLines(file);
-
-            // Update the specific line
-            lines.set(id - 1, task.toJson());
-
-            // Write the updated lines back to the file
-            Files.write(file, lines);
-        } catch (IOException e) {
-            throw new TaskRepositoryException(e.getMessage());
-        }
-    }
-
+    // "Update" means "put a new task in the same location" to preserve the old Task ID.
     @Override
-    public void updateTask(int id, String title, String description, LocalDate dueDate) {
-        Task newTask = taskById(id);
-        newTask.update(title, description, dueDate);
+    public void update(int id, Task newTask) {
+        if (!Files.exists(filePath)) {
+            throw new EmptyRepositoryException("Operation not allowed in an empty repository.");
+        }
         try {
             // Read all lines from the file
             List<String> lines = Files.readAllLines(filePath);

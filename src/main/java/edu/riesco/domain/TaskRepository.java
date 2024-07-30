@@ -1,24 +1,20 @@
 package edu.riesco.domain;
 
-import java.time.LocalDate;
 import java.util.List;
 
 
+// The Tasks ID will be the Task position in the repository.
 public interface TaskRepository {
 
-    int addTask(Task task);
+    // Append at the end.
+    int create(Task task);
 
-    List<Task> tasks();
+    List<Task> getAll();
 
-    List<String> tasksAsJson();
+    Task getById(int id);
 
-    Task taskById(int id);
+    // Create a new Task (Tasks are immutable objects) and save it in the same position to preserve the old ID.
+    void update(int id, Task newTask);
 
-    void markAsComplete(int id);
-
-    void markAsPending(int id);
-
-    void updateTask(int id, String title, String description, LocalDate dueDate);
-
-    void deleteTask(int id);
+    void delete(int id);
 }

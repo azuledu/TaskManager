@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TaskTest {
 
@@ -23,12 +24,12 @@ class TaskTest {
 
     @BeforeEach
     void setup() {
-        task = Task.create(A_TITLE, A_DESCRIPTION, TOMORROW);
+        task = Task.from(A_TITLE, A_DESCRIPTION, TOMORROW);
     }
 
     @Test
     @DisplayName("Can create a new task by providing a task title, description, and a due date")
-    void createTask() {
+    void fromTask() {
         assertEquals(A_TITLE, task.getTitle());
         assertEquals(A_DESCRIPTION, task.getDescription());
         assertEquals(TOMORROW, task.getDueDate());
@@ -38,7 +39,7 @@ class TaskTest {
     @DisplayName("New task can not have a blank title")
     void taskWithNoBlankTitle() {
         assertThrows(ModelException.class, () -> {
-            Task.create("", A_DESCRIPTION, TOMORROW);
+            Task.from("", A_DESCRIPTION, TOMORROW);
         });
     }
 
@@ -46,34 +47,34 @@ class TaskTest {
     @Test
     @DisplayName("The status for a new task is 'pending'")
     void newTaskStatus() {
-        assertTrue(task.isPending());
+        assertEquals(TaskStatus.PENDING, task.getStatus());
     }
 
     @Test
     @DisplayName("Tasks can be set as 'completed'")
     void markAsComplete() {
-        task.markAsComplete();
+        Task newTask = task.withStatus(TaskStatus.COMPLETED); // Tasks are immutable.
 
-        assertFalse(task.isPending());
+        assertEquals(TaskStatus.COMPLETED, newTask.getStatus());
     }
 
     @Test
     @DisplayName("Tasks can be set as 'pending'")
     void markTaskAsPending() {
-        task.markAsComplete();
-        task.markAsPending();
+        task = Task.from(A_TITLE, A_DESCRIPTION, TOMORROW, TaskStatus.COMPLETED);
+        Task newTask = task.withStatus(TaskStatus.PENDING); // Tasks are immutable.
 
-        assertTrue(task.isPending());
+        assertEquals(TaskStatus.PENDING, newTask.getStatus());
     }
 
     // Update
     @Test
     @DisplayName("Tasks can be updated")
     void updateTask() {
-        task.update(ANOTHER_TITLE, ANOTHER_DESCRIPTION, TODAY);
+        Task newTask = task.withTitle(ANOTHER_TITLE).withDescription(ANOTHER_DESCRIPTION).withDueDate(TODAY);
 
-        assertEquals(ANOTHER_TITLE, task.getTitle());
-        assertEquals(ANOTHER_DESCRIPTION, task.getDescription());
-        assertEquals(TODAY, task.getDueDate());
+        assertEquals(ANOTHER_TITLE, newTask.getTitle());
+        assertEquals(ANOTHER_DESCRIPTION, newTask.getDescription());
+        assertEquals(TODAY, newTask.getDueDate());
     }
 }

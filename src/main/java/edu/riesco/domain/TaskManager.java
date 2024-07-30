@@ -4,6 +4,7 @@ import edu.riesco.exception.TaskNotFoundException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TaskManager {
     private final TaskRepository taskRepository;
@@ -13,12 +14,12 @@ public class TaskManager {
     }
 
     public boolean hasTasks() {
-        return !taskRepository.tasks().isEmpty();
+        return !taskRepository.getAll().isEmpty();
     }
 
     public boolean hasTask(int id) {
         try {
-            taskRepository.taskById(id); // Task exist
+            taskRepository.getById(id); // Task exist
             return true;
         } catch (TaskNotFoundException e) {
             return false;
@@ -26,52 +27,65 @@ public class TaskManager {
     }
 
     public int addTask(String title, String description, LocalDate dueDate) {
-        Task newTask = Task.create(title, description, dueDate);
-        return taskRepository.addTask(newTask);
-    }
-
-    public boolean isPending(int id) {
-        return taskRepository.taskById(id).isPending();
-    }
-
-    public void markAsComplete(int id) {
-        taskRepository.markAsComplete(id);
-    }
-
-    public void markAsPending(int id) {
-        taskRepository.markAsPending(id);
+        Task newTask = Task.from(title, description, dueDate);
+        return taskRepository.create(newTask);
     }
 
     Task taskById(int id) {
-        return taskRepository.taskById(id);
+        return taskRepository.getById(id);
     }
 
     public List<Task> tasks() {
-        return taskRepository.tasks();
+        return taskRepository.getAll();
     }
 
-    public List<String> tasksAsJson() {
-        return taskRepository.tasksAsJson();
+    public List<String> tasksAsJson(List<Task> tasks) {
+        return tasks.stream().map(Task::toJson).collect(Collectors.toList());
     }
 
+    // Tasks are read-only
     public String getTaskTitle(int id) {
-        return taskRepository.taskById(id).getTitle();
+        return taskRepository.getById(id).getTitle();
     }
 
     public String getTaskDescription(int id) {
-        return taskRepository.taskById(id).getDescription();
+        return taskRepository.getById(id).getDescription();
     }
 
     public String getTaskDueDate(int id) {
-        LocalDate dueDate = taskRepository.taskById(id).getDueDate();
+        LocalDate dueDate = taskRepository.getById(id).getDueDate();
         return dueDate == null ? "" : dueDate.toString();
     }
 
+    public TaskStatus getTaskStatus(int id) {
+        return taskRepository.getById(id).getStatus();
+    }
+
+
+    // As Task object is immutable, all this "update" commands create a new Task with the new data.
+
+    public void markAsComplete(int id) {
+        Task task = taskRepository.getById(id);
+        Task newTask = task.withStatus(TaskStatus.COMPLETED);
+        taskRepository.update(id, newTask);
+    }
+
+    public void markAsPending(int id) {
+        Task task = taskRepository.getById(id);
+        Task newTask = task.withStatus(TaskStatus.PENDING);
+        taskRepository.update(id, newTask);
+    }
+
     public void updateTask(int id, String title, String description, LocalDate dueDate) {
-        taskRepository.updateTask(id, title, description, dueDate);
+        Task task = taskRepository.getById(id);
+        String newTitle = (title != null) ? title : task.getTitle();
+        String newDescription = (description != null) ? description : task.getDescription();
+        LocalDate newDueDate = (dueDate != null) ? dueDate : task.getDueDate();
+        Task newTask = task.withTitle(newTitle).withDescription(newDescription).withDueDate(newDueDate);
+        taskRepository.update(id, newTask);
     }
 
     public void deleteTask(int id) {
-        taskRepository.deleteTask(id);
+        taskRepository.delete(id);
     }
 }

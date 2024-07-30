@@ -1,5 +1,6 @@
 package edu.riesco.domain;
 
+import edu.riesco.exception.EmptyRepositoryException;
 import edu.riesco.exception.ModelException;
 import edu.riesco.exception.TaskNotFoundException;
 import edu.riesco.persistence.JsonFileTaskRepository;
@@ -16,11 +17,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TaskManagerTest {
 
-    //private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String A_TITLE = "aTitle";
     private static final String A_DESCRIPTION = "aDescription";
     private static final LocalDate TODAY = LocalDate.now();
-    private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);//.format(formatter);
+    private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
     private static final String TITLE_3 = "Title 3";
@@ -45,7 +45,7 @@ class TaskManagerTest {
 
     @Test
     @DisplayName("Users should be able to create a new task by providing a task title, description, and a due date.")
-    void createTask() {
+    void fromTask() {
         int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TOMORROW);
 
         assertTrue(taskManager.hasTask(id));
@@ -85,7 +85,7 @@ class TaskManagerTest {
     void newTaskStatus() {
         int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TOMORROW);
 
-        assertTrue(taskManager.isPending(id));
+        assertEquals(TaskStatus.PENDING, taskManager.getTaskStatus(id));
     }
 
     @Test
@@ -94,15 +94,18 @@ class TaskManagerTest {
         int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TOMORROW);
         taskManager.markAsComplete(id);
 
-        assertFalse(taskManager.isPending(id));
+        assertEquals(TaskStatus.COMPLETED, taskManager.getTaskStatus(id));
     }
 
     @Test
     @DisplayName("A task searched by ID can not be set as 'completed' if is not found")
     void NotFoundSetTaskAsCompleted() {
-        assertFalse(taskManager.hasTask(1));
+        taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
+
+        assertTrue(taskManager.hasTask(1));
+        assertFalse(taskManager.hasTask(2));
         assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.markAsComplete(1);
+            taskManager.markAsComplete(2);
         });
     }
 
@@ -113,15 +116,18 @@ class TaskManagerTest {
         taskManager.markAsComplete(id);
         taskManager.markAsPending(id);
 
-        assertTrue(taskManager.isPending(id));
+        assertEquals(TaskStatus.PENDING, taskManager.getTaskStatus(id));
     }
 
     @Test
     @DisplayName("A task searched by ID can not be set as 'pending' if is not found")
     void NotFoundSetTaskAsPending() {
-        assertFalse(taskManager.hasTask(1));
+        taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
+
+        assertTrue(taskManager.hasTask(1));
+        assertFalse(taskManager.hasTask(2));
         assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.markAsPending(1);
+            taskManager.markAsPending(2);
         });
     }
 
@@ -157,14 +163,26 @@ class TaskManagerTest {
         assertEquals(ANOTHER_TITLE, taskManager.getTaskTitle(id));
         assertEquals(ANOTHER_DESCRIPTION, taskManager.getTaskDescription(id));
         assertEquals(TOMORROW.toString(), taskManager.getTaskDueDate(id));
+        assertEquals(TaskStatus.PENDING, taskManager.getTaskStatus(id));
     }
 
     @Test
     @DisplayName("A task searched by ID can not be updated if is not found")
     void NotFoundUpdateTask() {
-        int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY); // Creates a Repository
+        taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
+
+        assertTrue(taskManager.hasTask(1));
         assertFalse(taskManager.hasTask(2));
         assertThrows(TaskNotFoundException.class, () -> {
+            taskManager.updateTask(2, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
+        });
+    }
+
+    @Test
+    @DisplayName("A task searched by ID can not be updated if the repository is empty")
+    void EmptyRepoUpdateTask() {
+        assertFalse(taskManager.hasTasks());
+        assertThrows(EmptyRepositoryException.class, () -> {
             taskManager.updateTask(2, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
         });
     }
@@ -182,9 +200,20 @@ class TaskManagerTest {
     @Test
     @DisplayName("A task searched by ID can not be deleted if is not found")
     void NotFoundDeleteTask() {
-        int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY); // Creates a Repository
+        taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
+
+        assertTrue(taskManager.hasTask(1));
         assertFalse(taskManager.hasTask(2));
         assertThrows(TaskNotFoundException.class, () -> {
+            taskManager.deleteTask(2);
+        });
+    }
+
+    @Test
+    @DisplayName("A task searched by ID can not be updated if the repository is empty")
+    void EmptyRepoDeleteTask() {
+        assertFalse(taskManager.hasTasks());
+        assertThrows(EmptyRepositoryException.class, () -> {
             taskManager.deleteTask(2);
         });
     }

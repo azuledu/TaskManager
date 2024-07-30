@@ -1,6 +1,7 @@
 package edu.riesco.api;
 
 import edu.riesco.domain.TaskManager;
+import edu.riesco.domain.TaskStatus;
 import edu.riesco.persistence.MemoryTaskRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
@@ -60,7 +61,7 @@ class TaskManagerCliTest {
     @Test
     @DisplayName("CLI can add task with title, description an due date.")
     void addTaskWithTitleAndDescription() {
-        final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION, "-t", TODAY};
+        final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION, "--due", TODAY};
         cmd.execute(args);
 
         assertEquals("Task " + TASK_ID + " created", outputStreamCaptor.toString().trim());
@@ -75,7 +76,7 @@ class TaskManagerCliTest {
     void updateTask() {
         final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION};
         cmd.execute(args);
-        final String[] args2 = {"update", TASK_ID, ANOTHER_TITLE, "-d", ANOTHER_DESCRIPTION, "-t", TOMORROW};
+        final String[] args2 = {"update", TASK_ID, "-t", ANOTHER_TITLE, "-d", ANOTHER_DESCRIPTION, "--due", TOMORROW};
         cmd.execute(args2);
 
         String consoleOutput = "Task " + TASK_ID + " created" + "\n" + "Task " + TASK_ID + " updated";
@@ -84,6 +85,23 @@ class TaskManagerCliTest {
         Assertions.assertEquals(ANOTHER_TITLE, TaskManagerCli.taskManager.tasks().getFirst().getTitle());
         Assertions.assertEquals(ANOTHER_DESCRIPTION, TaskManagerCli.taskManager.tasks().getFirst().getDescription());
         Assertions.assertEquals(TOMORROW, TaskManagerCli.taskManager.tasks().getFirst().getDueDate().toString());
+    }
+
+    @Test
+    @DisplayName("CLI can update a task deleting Description and DueDate.")
+    void updateTaskDeletingValues() {
+        final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION};
+        cmd.execute(args);
+        final String[] args2 = {"update", TASK_ID, "-d", "", "--due", ""};
+        cmd.execute(args2);
+
+        String consoleOutput = "Task " + TASK_ID + " created" + "\n" + "Task " + TASK_ID + " updated";
+        assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
+        Assertions.assertTrue(TaskManagerCli.taskManager.hasTasks());
+        int id = Integer.parseInt(TASK_ID);
+        Assertions.assertEquals(TASK_TITLE, TaskManagerCli.taskManager.getTaskTitle(id));
+        Assertions.assertEquals("", TaskManagerCli.taskManager.getTaskDescription(id));
+        Assertions.assertEquals("", TaskManagerCli.taskManager.getTaskDueDate(id));
     }
 
     @Test
@@ -96,7 +114,7 @@ class TaskManagerCliTest {
 
         String consoleOutput = "Task " + TASK_ID + " created" + "\n" + "Task " + TASK_ID + " completed";
         assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
-        Assertions.assertFalse(TaskManagerCli.taskManager.tasks().getFirst().isPending());
+        assertEquals(TaskStatus.COMPLETED, TaskManagerCli.taskManager.tasks().getFirst().getStatus());
     }
 
     @Test
@@ -113,7 +131,7 @@ class TaskManagerCliTest {
                 + "Task " + TASK_ID + " completed" + "\n"
                 + "Task " + TASK_ID + " pending";
         assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
-        Assertions.assertTrue(TaskManagerCli.taskManager.tasks().getFirst().isPending());
+        assertEquals(TaskStatus.PENDING, TaskManagerCli.taskManager.tasks().getFirst().getStatus());
     }
 
     @Test

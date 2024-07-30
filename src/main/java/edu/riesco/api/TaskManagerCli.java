@@ -1,6 +1,7 @@
 package edu.riesco.api;
 
 import com.google.gson.Gson;
+import edu.riesco.domain.Task;
 import edu.riesco.domain.TaskManager;
 import edu.riesco.persistence.JsonFileTaskRepository;
 import picocli.CommandLine;
@@ -49,7 +50,7 @@ class TaskManagerCli {
 
         @Option(names = {"-d", "--description"}, description = "Task description")
         private String description;
-        @Option(names = {"-t", "--due"}, description = "Due date")
+        @Option(names = {"--due"}, description = "Due date")
         private String dueDate;
         @Parameters(paramLabel = "title", description = "Task title")
         private String title;
@@ -71,17 +72,17 @@ class TaskManagerCli {
     static class UpdateCommand implements Runnable {
 
         @Option(names = {"-d", "--description"}, description = "Task description")
-        String description = "";
-        @Option(names = {"-t", "--due"}, description = "Due date")
+        String description;
+        @Option(names = {"-t", "title"}, description = "Task title")
+        private String title;
+        @Option(names = {"--due"}, description = "Due date")
         private String dueDate;
         @Parameters(paramLabel = "id", description = "Task ID")
         private int id;
-        @Parameters(paramLabel = "title", description = "Task title")
-        private String title;
 
         @Override
         public void run() {
-            var parsedDueDate = dueDate != null ? LocalDate.parse(dueDate) : null;
+            var parsedDueDate = (dueDate == null || dueDate.isBlank()) ? null : LocalDate.parse(dueDate);
             taskManager.updateTask(id, title, description, parsedDueDate);
             System.out.println("Task " + id + " updated");
         }
@@ -131,10 +132,12 @@ class TaskManagerCli {
 
         @Override
         public void run() {
-            List<String> tasks = taskManager.tasksAsJson();
-            showTasks(tasks);
+            List<Task> tasks = taskManager.tasks();
+            showTasks(taskManager.tasksAsJson(tasks));
         }
 
+
+        // TODO: Improve all this....
         private void showTasks(List<String> tasks) {
             Gson gson = new Gson();
             final String BOLD = "\033[1m";
@@ -148,7 +151,8 @@ class TaskManagerCli {
             int taskId = 1;
             for (String task : tasks) {
                 Map printableTask = gson.fromJson(task, Map.class);
-                String status = (boolean) printableTask.get("isPending") ? "PENDING " : GREEN + "COMPLETED" + NORMAL;
+                String status = (String) printableTask.get("status");
+                String printableStatus = status.equalsIgnoreCase("COMPLETED") ? GREEN + "COMPLETED" + NORMAL : status + " ";
                 String printableDueDate;
                 if (printableTask.get("dueDate") == null) {
                     printableDueDate = "";
@@ -160,7 +164,7 @@ class TaskManagerCli {
 
                 System.out.printf(PURPLE + "%4s  " + NORMAL, taskId);
                 System.out.printf("%10s  ", printableDueDate);
-                System.out.printf("%9s   ", status);
+                System.out.printf("%9s   ", printableStatus);
                 System.out.print(BOLD + printableTask.get("title") + NORMAL);
                 if (!printableTask.get("description").toString().isBlank()) {
                     System.out.print(" - " + printableTask.get("description"));
