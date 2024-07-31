@@ -69,17 +69,18 @@ class TaskManagerCliTest {
         Assertions.assertEquals(TODAY, TaskManagerCli.taskManager.tasks().getFirst().getDueDate().toString());
     }
 
-//    @Test
-//    @DisplayName("CLI can list all tasks.")
-//    void listTasks() {
-//        final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION, "--due", TODAY};
-//        cmd.execute(args);
-//        final String[] args2 = {"list"};
-//        cmd.execute(args2);
-//
-//        String consoleOutput = "Task " + TASK_ID + " created" + "\n";
-//        assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
-//    }
+    @Test
+    @DisplayName("CLI can list all tasks.")
+    void listTasks() {
+        final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION, "--due", TODAY};
+        cmd.execute(args);
+        final String[] args2 = {"list"};
+        cmd.execute(args2);
+
+        String printableTasks = TaskManagerCli.printTasks(TaskManagerCli.taskManager.tasksAsJson()); //.ListCommand
+        String consoleOutput = "Task " + TASK_ID + " created" + "\n" + printableTasks;
+        assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
+    }
 
     @Test
     @DisplayName("CLI can update a task.")

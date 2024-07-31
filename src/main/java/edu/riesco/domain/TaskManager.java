@@ -39,8 +39,8 @@ public class TaskManager {
         return taskRepository.getAll();
     }
 
-    public List<String> tasksAsJson(List<Task> tasks) {
-        return tasks.stream().map(Task::toJson).collect(Collectors.toList());
+    public List<String> tasksAsJson() {
+        return taskRepository.getAll().stream().map(Task::toJson).collect(Collectors.toList());
     }
 
     // Tasks are read-only
