@@ -3,6 +3,7 @@ package edu.riesco.api;
 import edu.riesco.domain.TaskManager;
 import edu.riesco.domain.TaskStatus;
 import edu.riesco.persistence.JsonFileTaskRepository;
+import edu.riesco.persistence.MemoryTaskRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
@@ -14,7 +15,27 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class TaskManagerCliTest {
+
+class MemoryTaskManagerCliTest extends TaskManagerCliTest {
+    @Override
+    public CommandLine getCommandLine() {
+        return new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new MemoryTaskRepository())));
+    }
+}
+
+class JsonFileTaskManagerCliTest extends TaskManagerCliTest {
+    @TempDir
+    Path tempDir;
+
+    @Override
+    public CommandLine getCommandLine() {
+        String filePath = tempDir.resolve("tmTestFile.json").toString();
+        return new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new JsonFileTaskRepository(filePath))));
+    }
+}
+
+
+abstract class TaskManagerCliTest {
 
     private static final String TASK_ID = "1";
     private static final String TASK_TITLE = "taskTitle";
@@ -28,15 +49,12 @@ class TaskManagerCliTest {
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
     CommandLine cmd;
 
-    @TempDir
-    Path tempDir;
+    abstract CommandLine getCommandLine();
 
     @BeforeEach
     void setup() {
         System.setOut(new PrintStream(outputStreamCaptor));
-        //cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new MemoryTaskRepository())));
-        String filePath = tempDir.resolve("tmTestFile.json").toString();
-        cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new JsonFileTaskRepository(filePath))));
+        cmd = getCommandLine();
     }
 
     @AfterEach
