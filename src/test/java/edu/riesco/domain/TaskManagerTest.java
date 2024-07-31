@@ -4,6 +4,7 @@ import edu.riesco.exception.EmptyRepositoryException;
 import edu.riesco.exception.ModelException;
 import edu.riesco.exception.TaskNotFoundException;
 import edu.riesco.persistence.JsonFileTaskRepository;
+import edu.riesco.persistence.MemoryTaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,26 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TaskManagerTest {
+
+class MemoryTaskManagerTest extends TaskManagerTest {
+    @Override
+    public TaskManager getTaskManager() {
+        return new TaskManager(new MemoryTaskRepository());
+    }
+}
+
+class JsonFileTaskManagerTest extends TaskManagerTest {
+    @TempDir
+    Path tempDir;
+
+    @Override
+    public TaskManager getTaskManager() {
+        String filePath = tempDir.resolve("tmTestFile.json").toString();
+        return new TaskManager(new JsonFileTaskRepository(filePath));
+    }
+}
+
+abstract class TaskManagerTest {
 
     private static final String A_TITLE = "aTitle";
     private static final String A_DESCRIPTION = "aDescription";
@@ -25,16 +45,14 @@ class TaskManagerTest {
     private static final String ANOTHER_DESCRIPTION = "Another description";
     private static final String TITLE_3 = "Title 3";
     private static final String DESCRIPTION_3 = "Description 3";
-
-    @TempDir
-    Path tempDir;
     private TaskManager taskManager;
+
+
+    public abstract TaskManager getTaskManager();
 
     @BeforeEach
     void setup() {
-        //taskManager = new TaskManager(new MemoryTaskRepository());
-        String filePath = tempDir.resolve("tmTestFile.json").toString();
-        taskManager = new TaskManager(new JsonFileTaskRepository(filePath));
+        taskManager = getTaskManager();
     }
 
     @Test
@@ -102,11 +120,14 @@ class TaskManagerTest {
     void NotFoundSetTaskAsCompleted() {
         taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
 
-        assertTrue(taskManager.hasTask(1));
-        assertFalse(taskManager.hasTask(2));
+        assertThrows(TaskNotFoundException.class, () -> {
+            taskManager.markAsComplete(0);
+        });
         assertThrows(TaskNotFoundException.class, () -> {
             taskManager.markAsComplete(2);
         });
+        assertTrue(taskManager.hasTask(1));
+        assertFalse(taskManager.hasTask(2));
     }
 
     @Test
@@ -124,11 +145,14 @@ class TaskManagerTest {
     void NotFoundSetTaskAsPending() {
         taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
 
-        assertTrue(taskManager.hasTask(1));
-        assertFalse(taskManager.hasTask(2));
+        assertThrows(TaskNotFoundException.class, () -> {
+            taskManager.markAsPending(0);
+        });
         assertThrows(TaskNotFoundException.class, () -> {
             taskManager.markAsPending(2);
         });
+        assertTrue(taskManager.hasTask(1));
+        assertFalse(taskManager.hasTask(2));
     }
 
     // List
@@ -171,11 +195,14 @@ class TaskManagerTest {
     void NotFoundUpdateTask() {
         taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
 
-        assertTrue(taskManager.hasTask(1));
-        assertFalse(taskManager.hasTask(2));
+        assertThrows(TaskNotFoundException.class, () -> {
+            taskManager.updateTask(0, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
+        });
         assertThrows(TaskNotFoundException.class, () -> {
             taskManager.updateTask(2, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
         });
+        assertTrue(taskManager.hasTask(1));
+        assertFalse(taskManager.hasTask(2));
     }
 
     @Test
@@ -194,7 +221,7 @@ class TaskManagerTest {
         int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
         taskManager.deleteTask(id);
 
-        assertFalse(taskManager.hasTask(id));
+        assertFalse(taskManager.hasTasks());
     }
 
     @Test
@@ -202,11 +229,14 @@ class TaskManagerTest {
     void NotFoundDeleteTask() {
         taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
 
-        assertTrue(taskManager.hasTask(1));
-        assertFalse(taskManager.hasTask(2));
+        assertThrows(TaskNotFoundException.class, () -> {
+            taskManager.deleteTask(0);
+        });
         assertThrows(TaskNotFoundException.class, () -> {
             taskManager.deleteTask(2);
         });
+        assertTrue(taskManager.hasTask(1));
+        assertFalse(taskManager.hasTask(2));
     }
 
     @Test

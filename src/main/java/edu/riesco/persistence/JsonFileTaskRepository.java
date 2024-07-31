@@ -60,10 +60,12 @@ public class JsonFileTaskRepository implements TaskRepository {
         }
         try (Stream<String> lines = Files.lines(filePath)) {
             String taskAsJson = lines.skip(id - 1).findFirst()
-                    .orElseThrow(() -> new TaskNotFoundException("Task with id " + id + " not found."));
+                    .orElseThrow(() -> new TaskNotFoundException("Task with ID " + id + " not found."));
             return Task.fromJson(taskAsJson);
+        } catch (IllegalArgumentException e) {
+            throw new TaskNotFoundException("Invalid ID: " + id);
         } catch (IOException e) {
-            throw new TaskNotFoundException("Task with id " + id + " not found.");
+            throw new TaskRepositoryException(e.getMessage());
         }
     }
 

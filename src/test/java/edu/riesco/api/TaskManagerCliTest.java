@@ -2,7 +2,7 @@ package edu.riesco.api;
 
 import edu.riesco.domain.TaskManager;
 import edu.riesco.domain.TaskStatus;
-import edu.riesco.persistence.MemoryTaskRepository;
+import edu.riesco.persistence.JsonFileTaskRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
@@ -34,11 +34,9 @@ class TaskManagerCliTest {
     @BeforeEach
     void setup() {
         System.setOut(new PrintStream(outputStreamCaptor));
-        cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new MemoryTaskRepository())));
-
-        //String filePath = tempDir.resolve("tmTestFile.json").toString();
-        //cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new JsonFileTaskRepository(filePath))));
-
+        //cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new MemoryTaskRepository())));
+        String filePath = tempDir.resolve("tmTestFile.json").toString();
+        cmd = new CommandLine(new TaskManagerCli.ParentCommand(new TaskManager(new JsonFileTaskRepository(filePath))));
     }
 
     @AfterEach
@@ -70,6 +68,18 @@ class TaskManagerCliTest {
         Assertions.assertEquals(TASK_DESCRIPTION, TaskManagerCli.taskManager.tasks().getFirst().getDescription());
         Assertions.assertEquals(TODAY, TaskManagerCli.taskManager.tasks().getFirst().getDueDate().toString());
     }
+
+//    @Test
+//    @DisplayName("CLI can list all tasks.")
+//    void listTasks() {
+//        final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION, "--due", TODAY};
+//        cmd.execute(args);
+//        final String[] args2 = {"list"};
+//        cmd.execute(args2);
+//
+//        String consoleOutput = "Task " + TASK_ID + " created" + "\n";
+//        assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
+//    }
 
     @Test
     @DisplayName("CLI can update a task.")

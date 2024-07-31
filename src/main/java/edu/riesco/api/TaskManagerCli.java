@@ -63,6 +63,7 @@ class TaskManagerCli {
                 System.out.println("Task " + id + " created");
             } catch (DateTimeParseException e) {
                 System.out.println("Invalid date: " + dueDate);
+                System.out.println("Date format should be: YYYY-MM-DD");
                 //throw new InvalidDateException(e.getMessage());
             }
         }
