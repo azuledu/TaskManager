@@ -16,6 +16,7 @@ class TaskTest {
     private static final String A_DESCRIPTION = "aDescription";
     private static final LocalDate TODAY = LocalDate.now();
     private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);
+    private static final LocalDate NO_DUE_DATE = null;
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
 
@@ -32,7 +33,7 @@ class TaskTest {
     void fromTask() {
         assertEquals(A_TITLE, task.getTitle());
         assertEquals(A_DESCRIPTION, task.getDescription());
-        assertEquals(TOMORROW, task.getDueDate());
+        assertEquals(TOMORROW.toString(), task.getPrintableDueDate());
     }
 
     @Test
@@ -41,6 +42,13 @@ class TaskTest {
         assertThrows(ModelException.class, () -> {
             Task.from("", A_DESCRIPTION, TOMORROW);
         });
+    }
+
+    @Test
+    @DisplayName("Can create Tasks with no due date")
+    void taskWithNoDueDate() {
+        Task newTask = Task.from(A_TITLE, A_DESCRIPTION, NO_DUE_DATE);
+        assertEquals("", newTask.getPrintableDueDate());
     }
 
     // Status
@@ -75,6 +83,6 @@ class TaskTest {
 
         assertEquals(ANOTHER_TITLE, newTask.getTitle());
         assertEquals(ANOTHER_DESCRIPTION, newTask.getDescription());
-        assertEquals(TODAY, newTask.getDueDate());
+        assertEquals(TODAY.toString(), newTask.getPrintableDueDate());
     }
 }

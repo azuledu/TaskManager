@@ -21,8 +21,8 @@ public final class Task {
     private Task(String title, String description, LocalDate dueDate, TaskStatus status) {
         this.title = title;
         this.description = description == null ? "" : description;
-        this.dueDate = dueDate;  //TODO: Maybe, improve with a Null Object Pattern.
-        this.status = status;
+        this.dueDate = dueDate;
+        this.status = status == null ? TaskStatus.PENDING : status;
     }
 
     private static void assertTitleIsNotBlank(String title) {
@@ -61,8 +61,12 @@ public final class Task {
         return description;
     }
 
-    public LocalDate getDueDate() {
-        return dueDate;
+    public String getPrintableDueDate() {
+        if (dueDate == null) {
+            return "";
+        } else {
+            return dueDate.toString();
+        }
     }
 
     public TaskStatus getStatus() {
@@ -74,15 +78,15 @@ public final class Task {
     }
 
     public Task withTitle(String newTitle) {
-        return Task.from(newTitle, description, dueDate, status);
+        return Task.from(newTitle, description, dueDate);
     }
 
     public Task withDescription(String newDescription) {
-        return Task.from(title, newDescription, dueDate, status);
+        return Task.from(title, newDescription, dueDate);
     }
 
     public Task withDueDate(LocalDate newDueDate) {
-        return Task.from(title, description, newDueDate, status);
+        return Task.from(title, description, newDueDate);
     }
 }
 

@@ -64,27 +64,29 @@ abstract class TaskManagerCliTest {
 
     @Test
     @DisplayName("CLI can add task with title.")
-    void addTaskWithTitle() {
+    void addTaskUpdateTaskTitle() {
         final String[] args = {"add", TASK_TITLE};
         cmd.execute(args);
 
         assertEquals("Task " + TASK_ID + " created", outputStreamCaptor.toString().trim());
         Assertions.assertTrue(TaskManagerCli.taskManager.hasTasks());
-        Assertions.assertEquals(TASK_TITLE, TaskManagerCli.taskManager.tasks().getFirst().getTitle());
-        Assertions.assertEquals("", TaskManagerCli.taskManager.tasks().getFirst().getDescription());
+        int id = Integer.parseInt(TASK_ID);
+        Assertions.assertEquals(TASK_TITLE, TaskManagerCli.taskManager.getTaskTitle(id));
+        Assertions.assertEquals("", TaskManagerCli.taskManager.getTaskDescription(id));
     }
 
     @Test
     @DisplayName("CLI can add task with title, description an due date.")
-    void addTaskWithTitleAndDescription() {
+    void addTaskUpdateTaskTitleAndDescription() {
         final String[] args = {"add", TASK_TITLE, "-d", TASK_DESCRIPTION, "--due", TODAY};
         cmd.execute(args);
 
         assertEquals("Task " + TASK_ID + " created", outputStreamCaptor.toString().trim());
         Assertions.assertTrue(TaskManagerCli.taskManager.hasTasks());
-        Assertions.assertEquals(TASK_TITLE, TaskManagerCli.taskManager.tasks().getFirst().getTitle());
-        Assertions.assertEquals(TASK_DESCRIPTION, TaskManagerCli.taskManager.tasks().getFirst().getDescription());
-        Assertions.assertEquals(TODAY, TaskManagerCli.taskManager.tasks().getFirst().getDueDate().toString());
+        int id = Integer.parseInt(TASK_ID);
+        Assertions.assertEquals(TASK_TITLE, TaskManagerCli.taskManager.getTaskTitle(id));
+        Assertions.assertEquals(TASK_DESCRIPTION, TaskManagerCli.taskManager.getTaskDescription(id));
+        Assertions.assertEquals(TODAY, TaskManagerCli.taskManager.getPrintableTaskDueDate(id));
     }
 
     @Test
@@ -111,9 +113,10 @@ abstract class TaskManagerCliTest {
         String consoleOutput = "Task " + TASK_ID + " created" + "\n" + "Task " + TASK_ID + " updated";
         assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
         Assertions.assertTrue(TaskManagerCli.taskManager.hasTasks());
-        Assertions.assertEquals(ANOTHER_TITLE, TaskManagerCli.taskManager.tasks().getFirst().getTitle());
-        Assertions.assertEquals(ANOTHER_DESCRIPTION, TaskManagerCli.taskManager.tasks().getFirst().getDescription());
-        Assertions.assertEquals(TOMORROW, TaskManagerCli.taskManager.tasks().getFirst().getDueDate().toString());
+        int id = Integer.parseInt(TASK_ID);
+        Assertions.assertEquals(ANOTHER_TITLE, TaskManagerCli.taskManager.getTaskTitle(id));
+        Assertions.assertEquals(ANOTHER_DESCRIPTION, TaskManagerCli.taskManager.getTaskDescription(id));
+        Assertions.assertEquals(TOMORROW, TaskManagerCli.taskManager.getPrintableTaskDueDate(id));
     }
 
     @Test
@@ -130,7 +133,7 @@ abstract class TaskManagerCliTest {
         int id = Integer.parseInt(TASK_ID);
         Assertions.assertEquals(TASK_TITLE, TaskManagerCli.taskManager.getTaskTitle(id));
         Assertions.assertEquals("", TaskManagerCli.taskManager.getTaskDescription(id));
-        Assertions.assertEquals("", TaskManagerCli.taskManager.getTaskDueDate(id));
+        Assertions.assertEquals("", TaskManagerCli.taskManager.getPrintableTaskDueDate(id));
     }
 
     @Test
@@ -143,7 +146,8 @@ abstract class TaskManagerCliTest {
 
         String consoleOutput = "Task " + TASK_ID + " created" + "\n" + "Task " + TASK_ID + " completed";
         assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
-        assertEquals(TaskStatus.COMPLETED, TaskManagerCli.taskManager.tasks().getFirst().getStatus());
+        int id = Integer.parseInt(TASK_ID);
+        assertEquals(TaskStatus.COMPLETED, TaskManagerCli.taskManager.getTaskStatus(id));
     }
 
     @Test
@@ -160,7 +164,8 @@ abstract class TaskManagerCliTest {
                 + "Task " + TASK_ID + " completed" + "\n"
                 + "Task " + TASK_ID + " pending";
         assertEquals(consoleOutput, outputStreamCaptor.toString().trim());
-        assertEquals(TaskStatus.PENDING, TaskManagerCli.taskManager.tasks().getFirst().getStatus());
+        int id = Integer.parseInt(TASK_ID);
+        assertEquals(TaskStatus.PENDING, TaskManagerCli.taskManager.getTaskStatus(id));
     }
 
     @Test

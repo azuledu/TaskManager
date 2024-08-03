@@ -31,7 +31,7 @@ public class TaskManager {
         return taskRepository.create(newTask);
     }
 
-    Task taskById(int id) {
+    public Task taskById(int id) {
         return taskRepository.getById(id);
     }
 
@@ -52,9 +52,8 @@ public class TaskManager {
         return taskRepository.getById(id).getDescription();
     }
 
-    public String getTaskDueDate(int id) {
-        LocalDate dueDate = taskRepository.getById(id).getDueDate();
-        return dueDate == null ? "" : dueDate.toString();
+    public String getPrintableTaskDueDate(int id) {
+        return taskRepository.getById(id).getPrintableDueDate();
     }
 
     public TaskStatus getTaskStatus(int id) {
@@ -76,12 +75,21 @@ public class TaskManager {
         taskRepository.update(id, newTask);
     }
 
-    public void updateTask(int id, String title, String description, LocalDate dueDate) {
+    public void updateTaskTitle(int id, String newTitle) {
         Task task = taskRepository.getById(id);
-        String newTitle = (title != null) ? title : task.getTitle();
-        String newDescription = (description != null) ? description : task.getDescription();
-        LocalDate newDueDate = (dueDate != null) ? dueDate : task.getDueDate();
-        Task newTask = task.withTitle(newTitle).withDescription(newDescription).withDueDate(newDueDate);
+        Task newTask = task.withTitle(newTitle);
+        taskRepository.update(id, newTask);
+    }
+
+    public void updateTaskDescription(int id, String newDescription) {
+        Task task = taskRepository.getById(id);
+        Task newTask = task.withDescription(newDescription);
+        taskRepository.update(id, newTask);
+    }
+
+    public void updateTaskDueDate(int id, LocalDate newDueDate) {
+        Task task = taskRepository.getById(id);
+        Task newTask = task.withDueDate(newDueDate);
         taskRepository.update(id, newTask);
     }
 

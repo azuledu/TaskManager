@@ -101,12 +101,12 @@ class TaskManagerCli {
         }
     }
 
-    @Command(name = "update", description = "Update Task")
+    @Command(name = "update", description = "Update Task", sortOptions = false)
     static class UpdateCommand implements Runnable {
 
         @Option(names = {"-d", "--description"}, description = "Task description")
         String description;
-        @Option(names = {"-t", "title"}, description = "Task title")
+        @Option(names = {"-t", "--title"}, description = "Task title")
         private String title;
         @Option(names = {"--due"}, description = "Due date")
         private String dueDate;
@@ -115,8 +115,15 @@ class TaskManagerCli {
 
         @Override
         public void run() {
-            var parsedDueDate = (dueDate == null || dueDate.isBlank()) ? null : LocalDate.parse(dueDate);
-            taskManager.updateTask(id, title, description, parsedDueDate);
+            if (title != null) taskManager.updateTaskTitle(id, title);
+            if (description != null) taskManager.updateTaskDescription(id, description);
+            if (dueDate != null) {
+                if (dueDate.isEmpty()) {  // Remove DueDate from Task
+                    taskManager.updateTaskDueDate(id, null);
+                } else {
+                    taskManager.updateTaskDueDate(id, LocalDate.parse(dueDate));
+                }
+            }
             System.out.println("Task " + id + " updated");
         }
     }

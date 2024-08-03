@@ -94,7 +94,7 @@ abstract class TaskManagerTest {
         int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, null);
 
         assertEquals(A_TITLE, taskManager.getTaskTitle(id));
-        assertEquals("", taskManager.getTaskDueDate(id));
+        assertEquals("", taskManager.getPrintableTaskDueDate(id));
     }
 
     // Status
@@ -182,11 +182,13 @@ abstract class TaskManagerTest {
     @DisplayName("A task searched by ID can be updated")
     void updateTask() {
         int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
-        taskManager.updateTask(id, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
+        taskManager.updateTaskTitle(id, ANOTHER_TITLE);
+        taskManager.updateTaskDescription(id, ANOTHER_DESCRIPTION);
+        taskManager.updateTaskDueDate(id, TOMORROW);
 
         assertEquals(ANOTHER_TITLE, taskManager.getTaskTitle(id));
         assertEquals(ANOTHER_DESCRIPTION, taskManager.getTaskDescription(id));
-        assertEquals(TOMORROW.toString(), taskManager.getTaskDueDate(id));
+        assertEquals(TOMORROW.toString(), taskManager.getPrintableTaskDueDate(id));
         assertEquals(TaskStatus.PENDING, taskManager.getTaskStatus(id));
     }
 
@@ -196,10 +198,10 @@ abstract class TaskManagerTest {
         taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
 
         assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.updateTask(0, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
+            taskManager.updateTaskTitle(0, ANOTHER_TITLE);
         });
         assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.updateTask(2, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
+            taskManager.updateTaskTitle(2, ANOTHER_TITLE);
         });
         assertTrue(taskManager.hasTask(1));
         assertFalse(taskManager.hasTask(2));
@@ -210,7 +212,7 @@ abstract class TaskManagerTest {
     void EmptyRepoUpdateTask() {
         assertFalse(taskManager.hasTasks());
         assertThrows(EmptyRepositoryException.class, () -> {
-            taskManager.updateTask(2, ANOTHER_TITLE, ANOTHER_DESCRIPTION, TOMORROW);
+            taskManager.updateTaskTitle(2, ANOTHER_TITLE);
         });
     }
 
