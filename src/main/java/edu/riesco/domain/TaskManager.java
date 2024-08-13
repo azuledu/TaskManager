@@ -2,7 +2,6 @@ package edu.riesco.domain;
 
 import edu.riesco.exception.TaskNotFoundException;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +25,7 @@ public class TaskManager {
         }
     }
 
-    public int addTask(String title, String description, LocalDate dueDate) {
+    public int addTask(String title, String description, DueDate dueDate) {
         Task newTask = Task.from(title, description, dueDate);
         return taskRepository.create(newTask);
     }
@@ -87,7 +86,7 @@ public class TaskManager {
         taskRepository.update(id, newTask);
     }
 
-    public void updateTaskDueDate(int id, LocalDate newDueDate) {
+    public void updateTaskDueDate(int id, DueDate newDueDate) {
         Task task = taskRepository.getById(id);
         Task newTask = task.withDueDate(newDueDate);
         taskRepository.update(id, newTask);

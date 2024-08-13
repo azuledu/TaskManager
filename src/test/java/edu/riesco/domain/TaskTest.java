@@ -12,11 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TaskTest {
 
+    public static final LocalDate NOW = LocalDate.now();
     private static final String A_TITLE = "aTitle";
     private static final String A_DESCRIPTION = "aDescription";
-    private static final LocalDate TODAY = LocalDate.now();
-    private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);
-    private static final LocalDate NO_DUE_DATE = null;
+    private static final DueDate TODAY = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.getDayOfMonth());
+    private static final DueDate TOMORROW = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.plusDays(1).getDayOfMonth());
+    private static final DueDate NO_DUE_DATE = null;
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
 
@@ -33,15 +34,13 @@ class TaskTest {
     void fromTask() {
         assertEquals(A_TITLE, task.getTitle());
         assertEquals(A_DESCRIPTION, task.getDescription());
-        assertEquals(TOMORROW.toString(), task.getPrintableDueDate());
+        assertEquals(TOMORROW.printableDueDate(), task.getPrintableDueDate());
     }
 
     @Test
     @DisplayName("New task can not have a blank title")
     void taskWithNoBlankTitle() {
-        assertThrows(ModelException.class, () -> {
-            Task.from("", A_DESCRIPTION, TOMORROW);
-        });
+        assertThrows(ModelException.class, () -> Task.from("", A_DESCRIPTION, TOMORROW));
     }
 
     @Test
@@ -83,6 +82,6 @@ class TaskTest {
 
         assertEquals(ANOTHER_TITLE, newTask.getTitle());
         assertEquals(ANOTHER_DESCRIPTION, newTask.getDescription());
-        assertEquals(TODAY.toString(), newTask.getPrintableDueDate());
+        assertEquals(TODAY.printableDueDate(), newTask.getPrintableDueDate());
     }
 }

@@ -1,5 +1,6 @@
 package edu.riesco.api;
 
+import edu.riesco.domain.DueDate;
 import edu.riesco.domain.TaskManager;
 import edu.riesco.domain.TaskStatus;
 import edu.riesco.persistence.JsonFileTaskRepository;
@@ -40,8 +41,8 @@ abstract class TaskManagerCliTest {
     private static final String TASK_ID = "1";
     private static final String TASK_TITLE = "taskTitle";
     private static final String TASK_DESCRIPTION = "taskDescription";
-    private static final String TODAY = LocalDate.now().toString();
-    private static final String TOMORROW = LocalDate.now().plusDays(1).toString();//.format(formatter);
+    private static final String TODAY = DueDate.of(LocalDate.now().getYear(), LocalDate.now().getMonthValue(), LocalDate.now().getDayOfMonth()).printableDueDate();
+    private static final String TOMORROW = DueDate.of(LocalDate.now().getYear(), LocalDate.now().getMonthValue(), LocalDate.now().plusDays(1).getDayOfMonth()).printableDueDate();
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
 

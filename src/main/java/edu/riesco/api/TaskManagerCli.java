@@ -1,6 +1,7 @@
 package edu.riesco.api;
 
 import com.google.gson.Gson;
+import edu.riesco.domain.DueDate;
 import edu.riesco.domain.TaskManager;
 import edu.riesco.persistence.JsonFileTaskRepository;
 import picocli.CommandLine;
@@ -91,7 +92,12 @@ class TaskManagerCli {
         @Override
         public void run() {
             try {
-                var parsedDueDate = dueDate != null ? LocalDate.parse(dueDate) : null;
+                DueDate parsedDueDate;
+                if (dueDate != null) {
+                    parsedDueDate = DueDate.of(dueDate);
+                } else {
+                    parsedDueDate = null;
+                }
                 int id = taskManager.addTask(title, description, parsedDueDate);
                 System.out.println("Task " + id + " created");
             } catch (DateTimeParseException e) {
@@ -101,7 +107,8 @@ class TaskManagerCli {
         }
     }
 
-    @Command(name = "update", description = "Update Task", sortOptions = false)
+    //@formatter:off
+    @Command(name = "update", description = "Update Task", sortOptions = false, sortSynopsis = false)
     static class UpdateCommand implements Runnable {
 
         @Option(names = {"-d", "--description"}, description = "Task description")
@@ -121,7 +128,7 @@ class TaskManagerCli {
                 if (dueDate.isEmpty()) {  // Remove DueDate from Task
                     taskManager.updateTaskDueDate(id, null);
                 } else {
-                    taskManager.updateTaskDueDate(id, LocalDate.parse(dueDate));
+                    taskManager.updateTaskDueDate(id, DueDate.of(dueDate));
                 }
             }
             System.out.println("Task " + id + " updated");

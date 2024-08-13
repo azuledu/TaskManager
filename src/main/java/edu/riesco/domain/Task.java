@@ -4,21 +4,19 @@ import com.google.gson.*;
 import edu.riesco.exception.ModelException;
 
 import java.lang.reflect.Type;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 
 public final class Task {
     public static final String TITLE_CAN_NOT_BE_BLANK = "Title can not be blank";
     private static final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter()).create();
+            .registerTypeAdapter(DueDate.class, new LocalDateTypeAdapter()).create();
     // Read-only object.
     private final String title;
     private final String description;
-    private final LocalDate dueDate;
+    private final DueDate dueDate;
     private final TaskStatus status;
 
-    private Task(String title, String description, LocalDate dueDate, TaskStatus status) {
+    private Task(String title, String description, DueDate dueDate, TaskStatus status) {
         this.title = title;
         this.description = description == null ? "" : description;
         this.dueDate = dueDate;
@@ -29,12 +27,12 @@ public final class Task {
         if (title == null || title.isBlank()) throw new ModelException(TITLE_CAN_NOT_BE_BLANK);
     }
 
-    public static Task from(String title, String description, LocalDate dueDate) {
+    public static Task from(String title, String description, DueDate dueDate) {
         assertTitleIsNotBlank(title);
         return new Task(title, description, dueDate, TaskStatus.PENDING);
     }
 
-    public static Task from(String title, String description, LocalDate dueDate, TaskStatus status) {
+    public static Task from(String title, String description, DueDate dueDate, TaskStatus status) {
         assertTitleIsNotBlank(title);
         return new Task(title, description, dueDate, status);
     }
@@ -65,7 +63,7 @@ public final class Task {
         if (dueDate == null) {
             return "";
         } else {
-            return dueDate.toString();
+            return dueDate.printableDueDate();
         }
     }
 
@@ -85,24 +83,22 @@ public final class Task {
         return Task.from(title, newDescription, dueDate);
     }
 
-    public Task withDueDate(LocalDate newDueDate) {
+    public Task withDueDate(DueDate newDueDate) {
         return Task.from(title, description, newDueDate);
     }
 }
 
-class LocalDateTypeAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
-
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+class LocalDateTypeAdapter implements JsonSerializer<DueDate>, JsonDeserializer<DueDate> {
 
     @Override
-    public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
+    public JsonElement serialize(final DueDate date, final Type typeOfSrc,
                                  final JsonSerializationContext context) {
-        return new JsonPrimitive(date.format(formatter));
+        return new JsonPrimitive(date.printableDueDate());
     }
 
     @Override
-    public LocalDate deserialize(final JsonElement json, final Type typeOfT,
-                                 final JsonDeserializationContext context) throws JsonParseException {
-        return LocalDate.parse(json.getAsString(), formatter);
+    public DueDate deserialize(final JsonElement json, final Type typeOfT,
+                               final JsonDeserializationContext context) throws JsonParseException {
+        return DueDate.of(json.getAsString());
     }
 }

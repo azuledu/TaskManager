@@ -37,10 +37,11 @@ class JsonFileTaskManagerTest extends TaskManagerTest {
 
 abstract class TaskManagerTest {
 
+    public static final LocalDate NOW = LocalDate.now();
     private static final String A_TITLE = "aTitle";
     private static final String A_DESCRIPTION = "aDescription";
-    private static final LocalDate TODAY = LocalDate.now();
-    private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);
+    private static final DueDate TODAY = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.getDayOfMonth());
+    private static final DueDate TOMORROW = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.plusDays(1).getDayOfMonth());
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
     private static final String TITLE_3 = "Title 3";
@@ -73,9 +74,7 @@ abstract class TaskManagerTest {
     @Test
     @DisplayName("Tasks can not have a blank title")
     void taskWithNoBlankTitle() {
-        assertThrows(ModelException.class, () -> {
-            taskManager.addTask("", A_DESCRIPTION, TOMORROW);
-        });
+        assertThrows(ModelException.class, () -> taskManager.addTask("", A_DESCRIPTION, TOMORROW));
         assertFalse(taskManager.hasTasks());
     }
 
@@ -120,12 +119,8 @@ abstract class TaskManagerTest {
     void NotFoundSetTaskAsCompleted() {
         taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
 
-        assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.markAsComplete(0);
-        });
-        assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.markAsComplete(2);
-        });
+        assertThrows(TaskNotFoundException.class, () -> taskManager.markAsComplete(0));
+        assertThrows(TaskNotFoundException.class, () -> taskManager.markAsComplete(2));
         assertTrue(taskManager.hasTask(1));
         assertFalse(taskManager.hasTask(2));
     }
@@ -145,12 +140,8 @@ abstract class TaskManagerTest {
     void NotFoundSetTaskAsPending() {
         taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
 
-        assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.markAsPending(0);
-        });
-        assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.markAsPending(2);
-        });
+        assertThrows(TaskNotFoundException.class, () -> taskManager.markAsPending(0));
+        assertThrows(TaskNotFoundException.class, () -> taskManager.markAsPending(2));
         assertTrue(taskManager.hasTask(1));
         assertFalse(taskManager.hasTask(2));
     }
@@ -188,7 +179,7 @@ abstract class TaskManagerTest {
 
         assertEquals(ANOTHER_TITLE, taskManager.getTaskTitle(id));
         assertEquals(ANOTHER_DESCRIPTION, taskManager.getTaskDescription(id));
-        assertEquals(TOMORROW.toString(), taskManager.getPrintableTaskDueDate(id));
+        assertEquals(TOMORROW.printableDueDate(), taskManager.getPrintableTaskDueDate(id));
         assertEquals(TaskStatus.PENDING, taskManager.getTaskStatus(id));
     }
 
@@ -197,12 +188,8 @@ abstract class TaskManagerTest {
     void NotFoundUpdateTask() {
         taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
 
-        assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.updateTaskTitle(0, ANOTHER_TITLE);
-        });
-        assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.updateTaskTitle(2, ANOTHER_TITLE);
-        });
+        assertThrows(TaskNotFoundException.class, () -> taskManager.updateTaskTitle(0, ANOTHER_TITLE));
+        assertThrows(TaskNotFoundException.class, () -> taskManager.updateTaskTitle(2, ANOTHER_TITLE));
         assertTrue(taskManager.hasTask(1));
         assertFalse(taskManager.hasTask(2));
     }
@@ -211,9 +198,7 @@ abstract class TaskManagerTest {
     @DisplayName("A task searched by ID can not be updated if the repository is empty")
     void EmptyRepoUpdateTask() {
         assertFalse(taskManager.hasTasks());
-        assertThrows(EmptyRepositoryException.class, () -> {
-            taskManager.updateTaskTitle(2, ANOTHER_TITLE);
-        });
+        assertThrows(EmptyRepositoryException.class, () -> taskManager.updateTaskTitle(2, ANOTHER_TITLE));
     }
 
     // Delete
@@ -231,12 +216,8 @@ abstract class TaskManagerTest {
     void NotFoundDeleteTask() {
         taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
 
-        assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.deleteTask(0);
-        });
-        assertThrows(TaskNotFoundException.class, () -> {
-            taskManager.deleteTask(2);
-        });
+        assertThrows(TaskNotFoundException.class, () -> taskManager.deleteTask(0));
+        assertThrows(TaskNotFoundException.class, () -> taskManager.deleteTask(2));
         assertTrue(taskManager.hasTask(1));
         assertFalse(taskManager.hasTask(2));
     }
@@ -245,9 +226,7 @@ abstract class TaskManagerTest {
     @DisplayName("A task searched by ID can not be updated if the repository is empty")
     void EmptyRepoDeleteTask() {
         assertFalse(taskManager.hasTasks());
-        assertThrows(EmptyRepositoryException.class, () -> {
-            taskManager.deleteTask(2);
-        });
+        assertThrows(EmptyRepositoryException.class, () -> taskManager.deleteTask(2));
     }
 
     @Test
@@ -255,7 +234,7 @@ abstract class TaskManagerTest {
     void TasksGetNewIdsAfterDeleteTask() {
         int id1 = taskManager.addTask(A_TITLE, A_DESCRIPTION, TODAY);
         int id2 = taskManager.addTask(ANOTHER_TITLE, ANOTHER_DESCRIPTION, TODAY);
-        int id3 = taskManager.addTask(TITLE_3, DESCRIPTION_3, TODAY);
+        taskManager.addTask(TITLE_3, DESCRIPTION_3, TODAY);
         taskManager.deleteTask(2);
 
         assertFalse(taskManager.hasTask(3));
