@@ -1,6 +1,7 @@
 package edu.riesco.domain;
 
 import edu.riesco.exception.ModelException;
+import edu.riesco.exception.OverdueException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,9 +16,10 @@ class TaskTest {
     public static final LocalDate NOW = LocalDate.now();
     private static final String A_TITLE = "aTitle";
     private static final String A_DESCRIPTION = "aDescription";
-    private static final DueDate TODAY = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.getDayOfMonth());
-    private static final DueDate TOMORROW = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.plusDays(1).getDayOfMonth());
-    private static final DueDate NO_DUE_DATE = null;
+    private static final TaskDueDate TODAY = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.getDayOfMonth());
+    private static final TaskDueDate TOMORROW = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.plusDays(1).getDayOfMonth());
+    private static final TaskDueDate YESTERDAY = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.minusDays(1).getDayOfMonth());
+    private static final TaskDueDate NO_DUE_DATE = new NoDueDate();
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
 
@@ -48,6 +50,12 @@ class TaskTest {
     void taskWithNoDueDate() {
         Task newTask = Task.from(A_TITLE, A_DESCRIPTION, NO_DUE_DATE);
         assertEquals("", newTask.getPrintableDueDate());
+    }
+
+    @Test
+    @DisplayName("Can not create Tasks with an overdue date")
+    void taskWithOverdue() {
+        assertThrows(OverdueException.class, () -> Task.from(A_TITLE, A_DESCRIPTION, YESTERDAY));
     }
 
     // Status

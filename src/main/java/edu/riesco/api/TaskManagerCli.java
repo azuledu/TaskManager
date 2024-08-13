@@ -2,7 +2,10 @@ package edu.riesco.api;
 
 import com.google.gson.Gson;
 import edu.riesco.domain.DueDate;
+import edu.riesco.domain.NoDueDate;
+import edu.riesco.domain.TaskDueDate;
 import edu.riesco.domain.TaskManager;
+import edu.riesco.exception.OverdueException;
 import edu.riesco.persistence.JsonFileTaskRepository;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -10,7 +13,6 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
@@ -46,12 +48,13 @@ class TaskManagerCli {
             String status = (String) printableTask.get("status");
             String printableStatus = status.equalsIgnoreCase("COMPLETED") ? GREEN + "COMPLETED" + NORMAL : status + " ";
             String printableDueDate;
-            if (printableTask.get("dueDate") == null) {
+            String jsonDueDate = (String) printableTask.get("dueDate");
+            if (jsonDueDate.isEmpty()) {
                 printableDueDate = "";
-            } else if (LocalDate.parse(printableTask.get("dueDate").toString()).isAfter(LocalDate.now())) {
-                printableDueDate = printableTask.get("dueDate").toString();
+            } else if (!DueDate.of(jsonDueDate).isOverdue()) {
+                printableDueDate = jsonDueDate;
             } else {
-                printableDueDate = YELLOW + printableTask.get("dueDate").toString() + NORMAL;
+                printableDueDate = YELLOW + jsonDueDate + NORMAL;
             }
 
             out = String.join("\n", out, String.format(PURPLE + "%4s  " + NORMAL, taskId));
@@ -92,17 +95,20 @@ class TaskManagerCli {
         @Override
         public void run() {
             try {
-                DueDate parsedDueDate;
+                TaskDueDate parsedDueDate;
                 if (dueDate != null) {
                     parsedDueDate = DueDate.of(dueDate);
                 } else {
-                    parsedDueDate = null;
+                    parsedDueDate = new NoDueDate();
                 }
                 int id = taskManager.addTask(title, description, parsedDueDate);
                 System.out.println("Task " + id + " created");
             } catch (DateTimeParseException e) {
                 System.out.println("Invalid date: " + dueDate);
                 System.out.println("Date format should be: YYYY-MM-DD");
+            } catch (OverdueException e) {
+                System.out.println("Overdue date: " + dueDate);
+                System.out.println("Task NOT created");
             }
         }
     }
@@ -122,16 +128,25 @@ class TaskManagerCli {
 
         @Override
         public void run() {
-            if (title != null) taskManager.updateTaskTitle(id, title);
-            if (description != null) taskManager.updateTaskDescription(id, description);
-            if (dueDate != null) {
-                if (dueDate.isEmpty()) {  // Remove DueDate from Task
-                    taskManager.updateTaskDueDate(id, null);
-                } else {
-                    taskManager.updateTaskDueDate(id, DueDate.of(dueDate));
+            try {
+                if (title != null) taskManager.updateTaskTitle(id, title);
+                if (description != null) taskManager.updateTaskDescription(id, description);
+                if (dueDate != null) {
+                    if (dueDate.isEmpty()) {  // Remove DueDate from Task
+                        taskManager.updateTaskDueDate(id, new NoDueDate());
+                    } else {
+                        taskManager.updateTaskDueDate(id, DueDate.of(dueDate));
+                    }
                 }
+                System.out.println("Task " + id + " updated");
+
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date: " + dueDate);
+                System.out.println("Date format should be: YYYY-MM-DD");
+            } catch (OverdueException e) {
+                System.out.println("Overdue date: " + dueDate);
+                System.out.println("Task " + id + " NOT updated");
             }
-            System.out.println("Task " + id + " updated");
         }
     }
 

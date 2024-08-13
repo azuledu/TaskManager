@@ -38,11 +38,12 @@ class JsonFileTaskManagerCliTest extends TaskManagerCliTest {
 
 abstract class TaskManagerCliTest {
 
+    public static final LocalDate NOW = LocalDate.now();
     private static final String TASK_ID = "1";
     private static final String TASK_TITLE = "taskTitle";
     private static final String TASK_DESCRIPTION = "taskDescription";
-    private static final String TODAY = DueDate.of(LocalDate.now().getYear(), LocalDate.now().getMonthValue(), LocalDate.now().getDayOfMonth()).printableDueDate();
-    private static final String TOMORROW = DueDate.of(LocalDate.now().getYear(), LocalDate.now().getMonthValue(), LocalDate.now().plusDays(1).getDayOfMonth()).printableDueDate();
+    private static final String TODAY = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.getDayOfMonth()).printableDueDate();
+    private static final String TOMORROW = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.plusDays(1).getDayOfMonth()).printableDueDate();
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
 

@@ -40,8 +40,8 @@ abstract class TaskManagerTest {
     public static final LocalDate NOW = LocalDate.now();
     private static final String A_TITLE = "aTitle";
     private static final String A_DESCRIPTION = "aDescription";
-    private static final DueDate TODAY = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.getDayOfMonth());
-    private static final DueDate TOMORROW = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.plusDays(1).getDayOfMonth());
+    private static final TaskDueDate TODAY = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.getDayOfMonth());
+    private static final TaskDueDate TOMORROW = DueDate.of(NOW.getYear(), NOW.getMonthValue(), NOW.plusDays(1).getDayOfMonth());
     private static final String ANOTHER_TITLE = "Another title";
     private static final String ANOTHER_DESCRIPTION = "Another description";
     private static final String TITLE_3 = "Title 3";
@@ -88,9 +88,9 @@ abstract class TaskManagerTest {
     }
 
     @Test
-    @DisplayName("Tasks can be created with a null due date")
+    @DisplayName("Tasks can be created with no due date")
     void taskWithNullDueDate() {
-        int id = taskManager.addTask(A_TITLE, A_DESCRIPTION, null);
+        int id = taskManager.addTask(A_TITLE, A_DESCRIPTION);
 
         assertEquals(A_TITLE, taskManager.getTaskTitle(id));
         assertEquals("", taskManager.getPrintableTaskDueDate(id));

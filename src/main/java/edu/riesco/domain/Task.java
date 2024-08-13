@@ -2,21 +2,23 @@ package edu.riesco.domain;
 
 import com.google.gson.*;
 import edu.riesco.exception.ModelException;
+import edu.riesco.exception.OverdueException;
 
 import java.lang.reflect.Type;
 
 
 public final class Task {
     public static final String TITLE_CAN_NOT_BE_BLANK = "Title can not be blank";
+    public static final String DATE_IS_OVERDUE = "Date is overdue";
     private static final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(DueDate.class, new LocalDateTypeAdapter()).create();
+            .registerTypeHierarchyAdapter(TaskDueDate.class, new TaskDueDateTypeAdapter()).create();
     // Read-only object.
     private final String title;
     private final String description;
-    private final DueDate dueDate;
+    private final TaskDueDate dueDate;
     private final TaskStatus status;
 
-    private Task(String title, String description, DueDate dueDate, TaskStatus status) {
+    private Task(String title, String description, TaskDueDate dueDate, TaskStatus status) {
         this.title = title;
         this.description = description == null ? "" : description;
         this.dueDate = dueDate;
@@ -27,12 +29,17 @@ public final class Task {
         if (title == null || title.isBlank()) throw new ModelException(TITLE_CAN_NOT_BE_BLANK);
     }
 
-    public static Task from(String title, String description, DueDate dueDate) {
+    private static void assertDateIsNotOverDue(TaskDueDate dueDate) {
+        if (dueDate.isOverdue()) throw new OverdueException(DATE_IS_OVERDUE);
+    }
+
+    public static Task from(String title, String description, TaskDueDate dueDate) {
         assertTitleIsNotBlank(title);
+        assertDateIsNotOverDue(dueDate);
         return new Task(title, description, dueDate, TaskStatus.PENDING);
     }
 
-    public static Task from(String title, String description, DueDate dueDate, TaskStatus status) {
+    public static Task from(String title, String description, TaskDueDate dueDate, TaskStatus status) {
         assertTitleIsNotBlank(title);
         return new Task(title, description, dueDate, status);
     }
@@ -41,6 +48,7 @@ public final class Task {
         try {
             Task task = gson.fromJson(json, Task.class);
             assertTitleIsNotBlank(task.title);
+            assertDateIsNotOverDue(task.dueDate);
             return task;
         } catch (JsonParseException | NullPointerException e) {
             throw new IllegalArgumentException("Invalid JSON string", e);
@@ -83,22 +91,23 @@ public final class Task {
         return Task.from(title, newDescription, dueDate);
     }
 
-    public Task withDueDate(DueDate newDueDate) {
+    public Task withDueDate(TaskDueDate newDueDate) {
         return Task.from(title, description, newDueDate);
     }
 }
 
-class LocalDateTypeAdapter implements JsonSerializer<DueDate>, JsonDeserializer<DueDate> {
+class TaskDueDateTypeAdapter implements JsonSerializer<TaskDueDate>, JsonDeserializer<TaskDueDate> {
 
     @Override
-    public JsonElement serialize(final DueDate date, final Type typeOfSrc,
+    public JsonElement serialize(final TaskDueDate date, final Type typeOfSrc,
                                  final JsonSerializationContext context) {
         return new JsonPrimitive(date.printableDueDate());
     }
 
     @Override
-    public DueDate deserialize(final JsonElement json, final Type typeOfT,
-                               final JsonDeserializationContext context) throws JsonParseException {
-        return DueDate.of(json.getAsString());
+    public TaskDueDate deserialize(final JsonElement json, final Type typeOfT,
+                                   final JsonDeserializationContext context) throws JsonParseException {
+        String jsonElement = json.getAsString();
+        return jsonElement.isEmpty() ? new NoDueDate() : DueDate.of(jsonElement);
     }
 }

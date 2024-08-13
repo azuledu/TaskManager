@@ -25,8 +25,13 @@ public class TaskManager {
         }
     }
 
-    public int addTask(String title, String description, DueDate dueDate) {
+    public int addTask(String title, String description, TaskDueDate dueDate) {
         Task newTask = Task.from(title, description, dueDate);
+        return taskRepository.create(newTask);
+    }
+
+    public int addTask(String title, String description) {
+        Task newTask = Task.from(title, description, new NoDueDate());
         return taskRepository.create(newTask);
     }
 
@@ -86,7 +91,7 @@ public class TaskManager {
         taskRepository.update(id, newTask);
     }
 
-    public void updateTaskDueDate(int id, DueDate newDueDate) {
+    public void updateTaskDueDate(int id, TaskDueDate newDueDate) {
         Task task = taskRepository.getById(id);
         Task newTask = task.withDueDate(newDueDate);
         taskRepository.update(id, newTask);

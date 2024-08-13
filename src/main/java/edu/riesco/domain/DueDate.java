@@ -2,7 +2,7 @@ package edu.riesco.domain;
 
 import java.time.LocalDate;
 
-public class DueDate {
+public class DueDate implements TaskDueDate {
     private final LocalDate dueDate;
 
     public DueDate(int year, int month, int day) {
@@ -18,7 +18,13 @@ public class DueDate {
         return new DueDate(parsedDueDate.getYear(), parsedDueDate.getMonthValue(), parsedDueDate.getDayOfMonth());
     }
 
+    @Override
     public String printableDueDate() {
         return dueDate.toString();
+    }
+
+    @Override
+    public boolean isOverdue() {
+        return dueDate.isBefore(LocalDate.now());
     }
 }
